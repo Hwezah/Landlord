@@ -1,15 +1,13 @@
-"use client";
+import { getListings } from "@/app/actions/listings";
+import { FeedProvider } from "@/app/providers/feed-provider";
+import HomeClient from "@/app/_components/HomeClient";
 
-import TopNavMobile from "@/app/_components/TopNavMobile";
-import BottomNavMobile from "@/app/_components/BottomNavMobile";
-import Feed from "@/app/_components/Feed";
+export default async function Home() {
+  const listings = await getListings();
 
-export default function HomeClient() {
   return (
-    <div className="relative h-screen flex flex-col overflow-hidden">
-      <TopNavMobile />
-      <Feed />
-      <BottomNavMobile />
-    </div>
+    <FeedProvider listings={listings}>
+      <HomeClient />
+    </FeedProvider>
   );
 }
