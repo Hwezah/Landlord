@@ -2,14 +2,13 @@
 
 import { useRef, useCallback, useEffect } from "react";
 import { useFeed } from "@/app/providers/feed-provider";
-import { SlidersHorizontal, Info, Heart } from "lucide-react";
+import { SlidersHorizontal, Info, Heart, MapPin } from "lucide-react";
 import {
   Sheet,
   SheetContent,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
-// ── Type badge colors ─────────────────────────────────────────────────────────
 const typeStyles = {
   house: { bg: "bg-emerald-500/20", text: "text-emerald-400", border: "border-emerald-500/30", dot: "bg-emerald-400" },
   office: { bg: "bg-blue-500/20", text: "text-blue-400", border: "border-blue-500/30", dot: "bg-blue-400" },
@@ -35,12 +34,10 @@ export default function Feed() {
 
   const listing = filteredListings[currentIndex];
 
-  // ── Reset photo when listing changes ─────────────────────────────────────
   useEffect(() => {
     setCurrentPhoto(0);
   }, [currentIndex, setCurrentPhoto]);
 
-  // ── Touch handlers ────────────────────────────────────────────────────────
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
     touchStartX.current = e.touches[0].clientX;
@@ -52,14 +49,12 @@ export default function Feed() {
     const deltaX = touchStartX.current - e.changedTouches[0].clientX;
 
     if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      // Horizontal — change photo
       if (deltaX > 40 && listing && currentPhoto < listing.photos.length - 1) {
         setCurrentPhoto(currentPhoto + 1);
       } else if (deltaX < -40 && currentPhoto > 0) {
         setCurrentPhoto(currentPhoto - 1);
       }
     } else {
-      // Vertical — change listing
       if (deltaY > 50 && currentIndex < filteredListings.length - 1) {
         setCurrentIndex(currentIndex + 1);
       } else if (deltaY < -50 && currentIndex > 0) {
@@ -70,7 +65,6 @@ export default function Feed() {
     touchStartX.current = null;
   }, [touchStartY, touchStartX, currentPhoto, currentIndex, filteredListings.length, listing, setCurrentPhoto, setCurrentIndex]);
 
-  // ── Mouse handlers (desktop preview) ─────────────────────────────────────
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     mouseStart.current = { x: e.clientX, y: e.clientY };
   }, []);
@@ -90,10 +84,9 @@ export default function Feed() {
     mouseStart.current = null;
   }, [mouseStart, currentPhoto, currentIndex, filteredListings.length, listing, setCurrentPhoto, setCurrentIndex]);
 
-  // ── Empty state ───────────────────────────────────────────────────────────
   if (!listing) {
     return (
-      <div className="h-screen w-full flex flex-col items-center justify-center bg-background gap-4">
+      <div className="h-full w-full flex flex-col items-center justify-center bg-background gap-4">
         <p className="text-4xl">🏠</p>
         <p className="text-foreground font-semibold">No listings found</p>
         <p className="text-muted-foreground text-sm">Try adjusting your filters</p>
@@ -115,14 +108,14 @@ export default function Feed() {
     <>
       {/* ── Full Screen Feed ──────────────────────────────────────────────── */}
       <div
-        className="relative w-full bg-black select-none cursor-grab active:cursor-grabbing"
+        className="relative w-full flex-1 bg-black select-none cursor-grab active:cursor-grabbing overflow-hidden"
         style={{ height: "calc(100vh - 56px)" }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
       >
-        {/* ── Background Photo ─────────────────────────────────────────── */}
+        {/* Background Photo */}
         <div className="absolute inset-0 transition-all duration-500">
           {photo ? (
             <img
@@ -138,11 +131,11 @@ export default function Feed() {
           )}
         </div>
 
-        {/* ── Gradient Overlay ─────────────────────────────────────────── */}
+        {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/90" />
 
-        {/* ── Listing Progress Bar — left side ─────────────────────────── */}
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-1.5">
+        {/* Listing Progress — left side */}
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-1.5">
           {filteredListings.map((_, i) => (
             <div
               key={i}
@@ -156,23 +149,21 @@ export default function Feed() {
           ))}
         </div>
 
-        {/* ── Photo Dots — top center ───────────────────────────────────── */}
+        {/* Photo Dots — top center */}
         {listing.photos.length > 1 && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex gap-1.5">
             {listing.photos.map((_, i) => (
               <div
                 key={i}
                 className={`h-1 rounded-full transition-all duration-300 ${
-                  i === currentPhoto
-                    ? "w-5 bg-white"
-                    : "w-1.5 bg-white/40"
+                  i === currentPhoto ? "w-5 bg-white" : "w-1.5 bg-white/40"
                 }`}
               />
             ))}
           </div>
         )}
 
-        {/* ── Bottom Content Overlay ────────────────────────────────────── */}
+        {/* Bottom Content Overlay */}
         <div className="absolute bottom-6 left-4 right-20 z-10">
 
           {/* Type Badge */}
@@ -188,9 +179,15 @@ export default function Feed() {
             {listing.title}
           </h2>
 
-          {/* Location + Distance */}
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-white/70 text-sm">📍 {listing.location_name}</span>
+          {/* Location — orange MapPin */}
+          <div className="flex items-center gap-1.5 mb-2">
+            <MapPin
+              size={14}
+              className="text-orange-400 shrink-0"
+              fill="currentColor"
+              strokeWidth={0}
+            />
+            <span className="text-white/70 text-sm">{listing.location_name}</span>
           </div>
 
           {/* Price */}
@@ -202,31 +199,28 @@ export default function Feed() {
           </div>
         </div>
 
-        {/* ── Right Side Floating Actions ───────────────────────────────── */}
-        <div className="absolute right-4 bottom-6 z-10 flex flex-col gap-3">
+        {/* Right Side Floating Actions — icons only */}
+        <div className="absolute right-3 bottom-6 z-10 flex flex-col gap-3">
 
           {/* Save */}
-          <button className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95">
+          <button className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95">
             <Heart size={18} className="text-white" />
-            <span className="text-[9px] text-white/60 font-semibold">Save</span>
           </button>
 
           {/* Info */}
           <button
             onClick={() => setDetailOpen(true)}
-            className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95"
+            className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
           >
             <Info size={18} className="text-white" />
-            <span className="text-[9px] text-white/60 font-semibold">Info</span>
           </button>
 
           {/* Filter */}
           <button
             onClick={() => setFilterSheetOpen(true)}
-            className="relative w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95"
+            className="relative w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
           >
             <SlidersHorizontal size={18} className="text-white" />
-            <span className="text-[9px] text-white/60 font-semibold">Filter</span>
             {activeFilterCount > 0 && (
               <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">
                 {activeFilterCount}
@@ -235,10 +229,10 @@ export default function Feed() {
           </button>
         </div>
 
-        {/* ── Swipe hint ────────────────────────────────────────────────── */}
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10">
-          <p className="text-white/25 text-[10px] font-medium">
-            ← swipe photos · swipe up for next ↑
+        {/* Swipe hint */}
+        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 z-10">
+          <p className="text-white/25 text-[10px]">
+            ← photos · swipe up next ↑
           </p>
         </div>
       </div>
@@ -249,12 +243,11 @@ export default function Feed() {
           side="bottom"
           className="rounded-t-3xl max-h-[85vh] overflow-y-auto px-5 pb-10"
         >
-          {/* Handle */}
           <div className="w-9 h-1 rounded-full bg-border mx-auto mb-5" />
 
           {/* Photo strip */}
           {listing.photos.length > 0 && (
-            <div className="flex gap-2 mb-5 overflow-x-auto pb-1 scrollbar-none">
+            <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
               {listing.photos.map((p, i) => (
                 <img
                   key={i}
@@ -291,9 +284,15 @@ export default function Feed() {
           </div>
 
           {/* Location */}
-          <p className="text-muted-foreground text-sm mb-4">
-            📍 {listing.location_name}
-          </p>
+          <div className="flex items-center gap-1.5 mb-4">
+            <MapPin
+              size={14}
+              className="text-orange-400 shrink-0"
+              fill="currentColor"
+              strokeWidth={0}
+            />
+            <p className="text-muted-foreground text-sm">{listing.location_name}</p>
+          </div>
 
           {/* Stats */}
           <div className="flex gap-2 mb-5">
@@ -330,7 +329,7 @@ export default function Feed() {
             </p>
           </div>
 
-          {/* Call Button */}
+          {/* Call Button — triggers phone dialer */}
           <Button
             className="w-full rounded-2xl py-6 text-base font-bold gap-2"
             onClick={() => window.open(`tel:${listing.phone_number}`)}
