@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { SlidersHorizontal, X } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -10,25 +9,8 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-// ── Types ────────────────────────────────────────────────────────────────────
-export type PropertyType = "all" | "house" | "office" | "shop";
-export type PriceRange = "any" | "under300" | "300to700" | "over700";
-
-export type FilterState = {
-  type: PropertyType;
-  priceRange: PriceRange;
-  rooms: string;
-  location: string;
-};
-
-interface TopNavMobileProps {
-  activeTab: "foryou" | "nearby";
-  onTabChange: (tab: "foryou" | "nearby") => void;
-  filters: FilterState;
-  onFiltersChange: (filters: FilterState) => void;
-  onApplyFilters: () => void;
-}
+import { useFeed } from "@/app/providers/feed-provider";
+import type { PropertyType, PriceRange } from "@/app/providers/feed-provider";
 
 // ── Price range labels ────────────────────────────────────────────────────────
 const priceLabels: Record<PriceRange, string> = {
@@ -38,42 +20,28 @@ const priceLabels: Record<PriceRange, string> = {
   over700: "700k+",
 };
 
-// ── Tab labels ────────────────────────────────────────────────────────────────
 const tabLabels: Record<"foryou" | "nearby", string> = {
   foryou: "For You",
   nearby: "Nearby",
 };
 
-// ── Main Component ────────────────────────────────────────────────────────────
-export default function TopNavMobile({
-  activeTab,
-  onTabChange,
-  filters,
-  onFiltersChange,
-  onApplyFilters,
-}: TopNavMobileProps) {
-  const [sheetOpen, setSheetOpen] = useState(false);
+export default function TopNavMobile() {
+  const {
+    activeTab,
+    setActiveTab,
+    filters,
+    setFilters,
+    applyFilters,
+    resetFilters,
+    activeFilterCount,
+    filterSheetOpen,
+    setFilterSheetOpen,
+  } = useFeed();
 
   function handleApply() {
-    onApplyFilters();
-    setSheetOpen(false);
+    applyFilters();
+    setFilterSheetOpen(false);
   }
-
-  function handleReset() {
-    onFiltersChange({
-      type: "all",
-      priceRange: "any",
-      rooms: "any",
-      location: "",
-    });
-  }
-
-  const activeFilterCount = [
-    filters.type !== "all",
-    filters.priceRange !== "any",
-    filters.rooms !== "any",
-    filters.location !== "",
-  ].filter(Boolean).length;
 
   return (
     <>
@@ -92,7 +60,7 @@ export default function TopNavMobile({
               {(["foryou", "nearby"] as const).map((tab) => (
                 <button
                   key={tab}
-                  onClick={() => onTabChange(tab)}
+                  onClick={() => setActiveTab(tab)}
                   className={`px-5 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
                     activeTab === tab
                       ? "bg-card text-foreground shadow-sm"
@@ -110,8 +78,8 @@ export default function TopNavMobile({
                 <button
                   key={type}
                   onClick={() => {
-                    onFiltersChange({ ...filters, type });
-                    onApplyFilters();
+                    setFilters({ ...filters, type });
+                    applyFilters();
                   }}
                   className={`text-sm font-medium capitalize transition-colors pb-0.5 ${
                     filters.type === type
@@ -128,7 +96,7 @@ export default function TopNavMobile({
             <div className="hidden md:flex items-center gap-3">
               <Button
                 variant="outline"
-                onClick={() => setSheetOpen(true)}
+                onClick={() => setFilterSheetOpen(true)}
                 className="relative rounded-full gap-2"
               >
                 <SlidersHorizontal size={14} />
@@ -148,23 +116,21 @@ export default function TopNavMobile({
         </div>
       </header>
 
-      {/* ── Filter Sheet (Shadcn) ───────────────────────────────────────────── */}
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+      {/* ── Filter Sheet ───────────────────────────────────────────────────── */}
+      <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
         <SheetContent
           side="bottom"
           className="rounded-t-3xl max-h-[90vh] overflow-y-auto px-5 pb-8"
         >
-          {/* Handle */}
           <div className="w-9 h-1 rounded-full bg-border mx-auto mb-4" />
 
-          {/* Header */}
           <SheetHeader className="flex flex-row items-center justify-between pb-4 border-b border-border mb-5">
             <SheetTitle className="text-base font-semibold text-foreground">
               Filter listings
             </SheetTitle>
             {activeFilterCount > 0 && (
               <button
-                onClick={handleReset}
+                onClick={resetFilters}
                 className="text-sm text-primary font-medium"
               >
                 Reset
@@ -172,19 +138,16 @@ export default function TopNavMobile({
             )}
           </SheetHeader>
 
-          {/* Body */}
           <div className="space-y-6">
 
             {/* Property Type */}
             <div>
-              <p className="text-sm font-medium text-foreground mb-3">
-                Property type
-              </p>
+              <p className="text-sm font-medium text-foreground mb-3">Property type</p>
               <div className="grid grid-cols-4 gap-2">
                 {(["all", "house", "office", "shop"] as PropertyType[]).map((type) => (
                   <button
                     key={type}
-                    onClick={() => onFiltersChange({ ...filters, type })}
+                    onClick={() => setFilters({ ...filters, type })}
                     className={`py-2 rounded-xl text-sm font-medium capitalize transition-all ${
                       filters.type === type
                         ? "bg-foreground text-background"
@@ -199,14 +162,12 @@ export default function TopNavMobile({
 
             {/* Price Range */}
             <div>
-              <p className="text-sm font-medium text-foreground mb-3">
-                Monthly price (UGX)
-              </p>
+              <p className="text-sm font-medium text-foreground mb-3">Monthly price (UGX)</p>
               <div className="grid grid-cols-2 gap-2">
                 {(Object.keys(priceLabels) as PriceRange[]).map((range) => (
                   <button
                     key={range}
-                    onClick={() => onFiltersChange({ ...filters, priceRange: range })}
+                    onClick={() => setFilters({ ...filters, priceRange: range })}
                     className={`py-2.5 rounded-xl text-sm font-medium transition-all ${
                       filters.priceRange === range
                         ? "bg-foreground text-background"
@@ -222,14 +183,12 @@ export default function TopNavMobile({
             {/* Rooms */}
             {(filters.type === "house" || filters.type === "all") && (
               <div>
-                <p className="text-sm font-medium text-foreground mb-3">
-                  Bedrooms
-                </p>
+                <p className="text-sm font-medium text-foreground mb-3">Bedrooms</p>
                 <div className="grid grid-cols-4 gap-2">
                   {["any", "1", "2", "3+"].map((room) => (
                     <button
                       key={room}
-                      onClick={() => onFiltersChange({ ...filters, rooms: room })}
+                      onClick={() => setFilters({ ...filters, rooms: room })}
                       className={`py-2 rounded-xl text-sm font-medium transition-all ${
                         filters.rooms === room
                           ? "bg-foreground text-background"
@@ -245,22 +204,17 @@ export default function TopNavMobile({
 
             {/* Location */}
             <div>
-              <p className="text-sm font-medium text-foreground mb-3">
-                Location
-              </p>
+              <p className="text-sm font-medium text-foreground mb-3">Location</p>
               <Input
                 type="text"
                 placeholder="e.g. Ntinda, Kisaasi, Kololo..."
                 value={filters.location}
-                onChange={(e) =>
-                  onFiltersChange({ ...filters, location: e.target.value })
-                }
+                onChange={(e) => setFilters({ ...filters, location: e.target.value })}
                 className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary"
               />
             </div>
           </div>
 
-          {/* Footer */}
           <div className="mt-6">
             <Button
               onClick={handleApply}

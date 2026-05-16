@@ -1,45 +1,24 @@
 "use client";
 
-import { useState } from "react";
-import TopNav from "@/app/_components/TopNavMobile";
-import type { FilterState } from "@/app/_components/TopNavMobile";
+import TopNavMobile from "@/app/_components/TopNavMobile";
 import BottomNavMobile from "@/app/_components/BottomNavMobile";
 import { ModeToggle } from "@/components/ui/modeToggle";
-import type { Listing } from "@/app/actions/listings";
+import { useFeed } from "@/app/providers/feed-provider";
 
-const defaultFilters: FilterState = {
-  type: "all",
-  priceRange: "any",
-  rooms: "any",
-  location: "",
-};
-
-export default function HomeClient({ listings }: { listings: Listing[] }) {
-  const [activeTab, setActiveTab] = useState<"foryou" | "nearby">("foryou");
-  const [filters, setFilters] = useState<FilterState>(defaultFilters);
-  const [appliedFilters, setAppliedFilters] = useState<FilterState>(defaultFilters);
-
-  function handleApplyFilters() {
-    setAppliedFilters(filters);
-  }
+export default function HomeClient() {
+  const { filteredListings } = useFeed();
 
   return (
     <div className="relative h-screen flex flex-col">
       <main className="flex-1">
-        <TopNav
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          filters={filters}
-          onFiltersChange={setFilters}
-          onApplyFilters={handleApplyFilters}
-        />
+        <TopNavMobile />
 
-        {/* Temporary — confirm data is coming through */}
+        {/* Temporary — confirm filtered data */}
         <div className="p-4">
           <p className="text-foreground font-semibold mb-4">
-            {listings.length} listings found
+            {filteredListings.length} listings found
           </p>
-          {listings.map((listing) => (
+          {filteredListings.map((listing) => (
             <div
               key={listing.id}
               className="mb-4 p-4 rounded-xl bg-card border border-border"

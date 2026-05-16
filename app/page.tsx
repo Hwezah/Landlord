@@ -1,7 +1,15 @@
-import { getListings } from "@/app/actions/listings";
-import HomeClient from "@/app/_components/HomeClient";
+"use client";
 
-export default async function Home() {
-  const listings = await getListings();
-  return <HomeClient listings={listings} />;
+import TopNavMobile from "@/app/_components/TopNavMobile";
+import BottomNavMobile from "@/app/_components/BottomNavMobile";
+import Feed from "@/app/_components/Feed";
+
+export default function HomeClient() {
+  return (
+    <div className="relative h-screen flex flex-col overflow-hidden">
+      <TopNavMobile />
+      <Feed />
+      <BottomNavMobile />
+    </div>
+  );
 }
