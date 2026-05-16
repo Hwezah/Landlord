@@ -1,27 +1,50 @@
 "use client";
 
-import type { Dispatch, SetStateAction } from "react";
+import { useState } from "react";
+import { SlidersHorizontal, X } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+// ── Types ────────────────────────────────────────────────────────────────────
+export type PropertyType = "all" | "house" | "office" | "shop";
+export type PriceRange = "any" | "under300" | "300to700" | "over700";
 
 export type FilterState = {
-  type: "all" | "rent" | "sale";
-  priceRange: "any" | "under-500" | "500-1000" | "1000+";
-  rooms: "any" | "1" | "2" | "3+";
+  type: PropertyType;
+  priceRange: PriceRange;
+  rooms: string;
   location: string;
 };
 
 interface TopNavMobileProps {
   activeTab: "foryou" | "nearby";
-  onTabChange: Dispatch<SetStateAction<"foryou" | "nearby">>;
+  onTabChange: (tab: "foryou" | "nearby") => void;
   filters: FilterState;
-  onFiltersChange: Dispatch<SetStateAction<FilterState>>;
+  onFiltersChange: (filters: FilterState) => void;
   onApplyFilters: () => void;
 }
 
+// ── Price range labels ────────────────────────────────────────────────────────
+const priceLabels: Record<PriceRange, string> = {
+  any: "Any price",
+  under300: "Under 300k",
+  "300to700": "300k – 700k",
+  over700: "700k+",
+};
+
+// ── Tab labels ────────────────────────────────────────────────────────────────
 const tabLabels: Record<"foryou" | "nearby", string> = {
-  foryou: "For you",
+  foryou: "For You",
   nearby: "Nearby",
 };
 
+// ── Main Component ────────────────────────────────────────────────────────────
 export default function TopNavMobile({
   activeTab,
   onTabChange,
@@ -29,94 +52,225 @@ export default function TopNavMobile({
   onFiltersChange,
   onApplyFilters,
 }: TopNavMobileProps) {
-  const updateFilter = <K extends keyof FilterState>(
-    key: K,
-    value: FilterState[K],
-  ) => {
-    onFiltersChange((prev) => ({ ...prev, [key]: value }));
-  };
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  function handleApply() {
+    onApplyFilters();
+    setSheetOpen(false);
+  }
+
+  function handleReset() {
+    onFiltersChange({
+      type: "all",
+      priceRange: "any",
+      rooms: "any",
+      location: "",
+    });
+  }
+
+  const activeFilterCount = [
+    filters.type !== "all",
+    filters.priceRange !== "any",
+    filters.rooms !== "any",
+    filters.location !== "",
+  ].filter(Boolean).length;
 
   return (
-    <div className="border-b bg-background/90 p-4 backdrop-blur-md">
-      <div className="flex items-center justify-between gap-3 mb-4">
-        <div className="inline-flex rounded-full bg-muted p-1">
-          {(["foryou", "nearby"] as const).map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => onTabChange(tab)}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-                activeTab === tab
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {tabLabels[tab]}
-            </button>
-          ))}
+    <>
+      {/* ── Top Navigation Bar ─────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-40 w-full bg-background border-b border-border">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex items-center justify-between h-14">
+
+            {/* Logo */}
+            <span className="text-xl font-bold tracking-tight text-foreground">
+              Landlord
+            </span>
+
+            {/* ── Mobile: For You / Nearby Tabs ─────────────────────────── */}
+            <div className="flex md:hidden items-center bg-muted rounded-full p-1">
+              {(["foryou", "nearby"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => onTabChange(tab)}
+                  className={`px-5 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                    activeTab === tab
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {tabLabels[tab]}
+                </button>
+              ))}
+            </div>
+
+            {/* ── Desktop: Category Links ────────────────────────────────── */}
+            <nav className="hidden md:flex items-center flex-1 justify-center gap-6">
+              {(["all", "house", "office", "shop"] as PropertyType[]).map((type) => (
+                <button
+                  key={type}
+                  onClick={() => {
+                    onFiltersChange({ ...filters, type });
+                    onApplyFilters();
+                  }}
+                  className={`text-sm font-medium capitalize transition-colors pb-0.5 ${
+                    filters.type === type
+                      ? "text-foreground border-b-2 border-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {type === "all" ? "All" : `${type}s`}
+                </button>
+              ))}
+            </nav>
+
+            {/* ── Desktop: Right Actions ─────────────────────────────────── */}
+            <div className="hidden md:flex items-center gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setSheetOpen(true)}
+                className="relative rounded-full gap-2"
+              >
+                <SlidersHorizontal size={14} />
+                Filters
+                {activeFilterCount > 0 && (
+                  <span className="w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </Button>
+
+              <Button className="rounded-full">
+                + Post Listing
+              </Button>
+            </div>
+          </div>
         </div>
+      </header>
 
-        <button
-          type="button"
-          onClick={onApplyFilters}
-          className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+      {/* ── Filter Sheet (Shadcn) ───────────────────────────────────────────── */}
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent
+          side="bottom"
+          className="rounded-t-3xl max-h-[90vh] overflow-y-auto px-5 pb-8"
         >
-          Apply
-        </button>
-      </div>
+          {/* Handle */}
+          <div className="w-9 h-1 rounded-full bg-border mx-auto mb-4" />
 
-      <div className="grid gap-3">
-        <label className="grid gap-1 text-xs text-muted-foreground">
-          Type
-          <select
-            value={filters.type}
-            onChange={(event) => updateFilter("type", event.target.value as FilterState["type"])}
-            className="rounded-xl border border-border bg-background px-3 py-2 text-sm"
-          >
-            <option value="all">All</option>
-            <option value="rent">Rent</option>
-            <option value="sale">Sale</option>
-          </select>
-        </label>
+          {/* Header */}
+          <SheetHeader className="flex flex-row items-center justify-between pb-4 border-b border-border mb-5">
+            <SheetTitle className="text-base font-semibold text-foreground">
+              Filter listings
+            </SheetTitle>
+            {activeFilterCount > 0 && (
+              <button
+                onClick={handleReset}
+                className="text-sm text-primary font-medium"
+              >
+                Reset
+              </button>
+            )}
+          </SheetHeader>
 
-        <label className="grid gap-1 text-xs text-muted-foreground">
-          Price range
-          <select
-            value={filters.priceRange}
-            onChange={(event) => updateFilter("priceRange", event.target.value as FilterState["priceRange"])}
-            className="rounded-xl border border-border bg-background px-3 py-2 text-sm"
-          >
-            <option value="any">Any</option>
-            <option value="under-500">Under 500</option>
-            <option value="500-1000">500 - 1000</option>
-            <option value="1000+">1000+</option>
-          </select>
-        </label>
+          {/* Body */}
+          <div className="space-y-6">
 
-        <label className="grid gap-1 text-xs text-muted-foreground">
-          Rooms
-          <select
-            value={filters.rooms}
-            onChange={(event) => updateFilter("rooms", event.target.value as FilterState["rooms"])}
-            className="rounded-xl border border-border bg-background px-3 py-2 text-sm"
-          >
-            <option value="any">Any</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3+">3+</option>
-          </select>
-        </label>
+            {/* Property Type */}
+            <div>
+              <p className="text-sm font-medium text-foreground mb-3">
+                Property type
+              </p>
+              <div className="grid grid-cols-4 gap-2">
+                {(["all", "house", "office", "shop"] as PropertyType[]).map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => onFiltersChange({ ...filters, type })}
+                    className={`py-2 rounded-xl text-sm font-medium capitalize transition-all ${
+                      filters.type === type
+                        ? "bg-foreground text-background"
+                        : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
+                    }`}
+                  >
+                    {type === "all" ? "All" : `${type}s`}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        <label className="grid gap-1 text-xs text-muted-foreground">
-          Location
-          <input
-            value={filters.location}
-            onChange={(event) => updateFilter("location", event.target.value)}
-            placeholder="Search location"
-            className="rounded-xl border border-border bg-background px-3 py-2 text-sm"
-          />
-        </label>
-      </div>
-    </div>
+            {/* Price Range */}
+            <div>
+              <p className="text-sm font-medium text-foreground mb-3">
+                Monthly price (UGX)
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {(Object.keys(priceLabels) as PriceRange[]).map((range) => (
+                  <button
+                    key={range}
+                    onClick={() => onFiltersChange({ ...filters, priceRange: range })}
+                    className={`py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      filters.priceRange === range
+                        ? "bg-foreground text-background"
+                        : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
+                    }`}
+                  >
+                    {priceLabels[range]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Rooms */}
+            {(filters.type === "house" || filters.type === "all") && (
+              <div>
+                <p className="text-sm font-medium text-foreground mb-3">
+                  Bedrooms
+                </p>
+                <div className="grid grid-cols-4 gap-2">
+                  {["any", "1", "2", "3+"].map((room) => (
+                    <button
+                      key={room}
+                      onClick={() => onFiltersChange({ ...filters, rooms: room })}
+                      className={`py-2 rounded-xl text-sm font-medium transition-all ${
+                        filters.rooms === room
+                          ? "bg-foreground text-background"
+                          : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
+                      }`}
+                    >
+                      {room === "any" ? "Any" : room}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Location */}
+            <div>
+              <p className="text-sm font-medium text-foreground mb-3">
+                Location
+              </p>
+              <Input
+                type="text"
+                placeholder="e.g. Ntinda, Kisaasi, Kololo..."
+                value={filters.location}
+                onChange={(e) =>
+                  onFiltersChange({ ...filters, location: e.target.value })
+                }
+                className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary"
+              />
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="mt-6">
+            <Button
+              onClick={handleApply}
+              className="w-full rounded-2xl py-6 text-sm font-semibold"
+            >
+              Show listings
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }
