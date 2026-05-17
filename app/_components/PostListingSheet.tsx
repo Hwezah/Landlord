@@ -180,7 +180,7 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
           placeholder="e.g. Self Contained in Ntinda"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary py-3"
+          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary py-5"
         />
       </div>
 
@@ -192,7 +192,7 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
           placeholder="e.g. 450000"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary py-3"
+          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary py-5"
         />
       </div>
 
@@ -203,7 +203,7 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
           placeholder="e.g. Ntinda, Kampala"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary py-3"
+          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary py-5"
         />
       </div>
 
@@ -251,7 +251,7 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
           placeholder="e.g. 0772 123 456"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary py-3"
+          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary py-5"
         />
         <p className="text-muted-foreground text-xs mt-1.5">
           This number will be visible to tenants
@@ -267,7 +267,7 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
           maxLength={4}
           value={pin}
           onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
-          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary tracking-widest text-center text-lg py-3"
+          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary tracking-widest text-center text-lg py-5"
         />
         <p className="text-muted-foreground text-xs mt-1.5">
           You will need this PIN to edit or delete your listing later
