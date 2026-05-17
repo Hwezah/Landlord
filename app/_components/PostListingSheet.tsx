@@ -117,7 +117,7 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
             <button
               key={t}
               onClick={() => setType(t)}
-              className={`py-2.5 rounded-xl text-sm font-medium transition-all ${
+              className={`py-3 rounded-xl text-sm font-medium transition-all ${
                 type === t
                   ? "bg-foreground text-background"
                   : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -180,7 +180,7 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
           placeholder="e.g. Self Contained in Ntinda"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary"
+          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary py-3"
         />
       </div>
 
@@ -192,7 +192,7 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
           placeholder="e.g. 450000"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary"
+          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary py-3"
         />
       </div>
 
@@ -203,7 +203,7 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
           placeholder="e.g. Ntinda, Kampala"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary"
+          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary py-3"
         />
       </div>
 
@@ -216,7 +216,7 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
               <button
                 key={r}
                 onClick={() => setRooms(r === "4+" ? "4" : r)}
-                className={`py-2.5 rounded-xl text-sm font-medium transition-all ${
+                className={`py-3 rounded-xl text-sm font-medium transition-all ${
                   rooms === (r === "4+" ? "4" : r)
                     ? "bg-foreground text-background"
                     : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -239,7 +239,7 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
-          className="w-full px-4 py-3 rounded-xl bg-muted text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary focus:bg-background transition-all border border-transparent focus:border-border resize-none text-sm"
+          className="w-full px-4 py-4 rounded-xl bg-muted text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary focus:bg-background transition-all border border-transparent focus:border-border resize-none text-sm"
         />
       </div>
 
@@ -251,7 +251,7 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
           placeholder="e.g. 0772 123 456"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary"
+          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary py-3"
         />
         <p className="text-muted-foreground text-xs mt-1.5">
           This number will be visible to tenants
@@ -263,11 +263,11 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
         <p className="text-sm font-medium text-foreground mb-2">Create a 4-digit PIN</p>
         <Input
           type="password"
-          placeholder="e.g. 1234"
+          placeholder="····"
           maxLength={4}
           value={pin}
           onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
-          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary tracking-widest text-center text-lg"
+          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary tracking-widest text-center text-lg py-3"
         />
         <p className="text-muted-foreground text-xs mt-1.5">
           You will need this PIN to edit or delete your listing later
