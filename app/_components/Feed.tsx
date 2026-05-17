@@ -26,16 +26,17 @@ function DetailContent({
   styles: typeof typeStyles.house;
 }) {
   return (
-    <div className="px-1">
+    <div className="px-1 space-y-4">
+
       {/* Photo strip */}
       {listing.photos.length > 0 && (
-        <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
+        <div className="flex gap-2 overflow-x-auto pb-1">
           {listing.photos.map((p: string, i: number) => (
             <img
               key={i}
               src={p}
               alt={`Photo ${i + 1}`}
-              className={`h-24 w-36 object-cover rounded-xl flex-shrink-0 cursor-pointer transition-all ${
+              className={`h-20 w-28 object-cover rounded-xl flex-shrink-0 cursor-pointer transition-all ${
                 i === currentPhoto ? "ring-2 ring-primary" : "opacity-60"
               }`}
               onClick={() => setCurrentPhoto(i)}
@@ -44,71 +45,72 @@ function DetailContent({
         </div>
       )}
 
-      {/* Type badge */}
-      <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border mb-3 ${styles.bg} ${styles.border}`}>
-        <div className={`w-1.5 h-1.5 rounded-full ${styles.dot}`} />
-        <span className={`text-[11px] font-bold tracking-wide uppercase ${styles.text}`}>
-          {listing.type}
-        </span>
-      </div>
+      {/* Type + Title + Price row */}
+      <div>
+        <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border mb-2 ${styles.bg} ${styles.border}`}>
+          <div className={`w-1.5 h-1.5 rounded-full ${styles.dot}`} />
+          <span className={`text-[11px] font-bold tracking-wide uppercase ${styles.text}`}>
+            {listing.type}
+          </span>
+        </div>
 
-      {/* Title + Price — min-w-0 prevents overflow */}
-      <div className="flex items-start justify-between gap-4 mb-2">
-        <h2 className="text-foreground font-bold text-xl leading-tight flex-1 min-w-0">
-          {listing.title}
-        </h2>
-        <div className="text-right shrink-0 ml-2">
-          <p className="text-foreground font-bold text-base">
-            UGX {listing.price.toLocaleString()}
-          </p>
-          <p className="text-muted-foreground text-xs">/month</p>
+        <div className="flex items-start justify-between gap-3">
+          <h2 className="text-foreground font-bold text-lg leading-tight flex-1 min-w-0">
+            {listing.title}
+          </h2>
+          <div className="text-right shrink-0">
+            <p className="text-foreground font-bold text-base">
+              UGX {listing.price.toLocaleString()}
+            </p>
+            <p className="text-muted-foreground text-xs">/month</p>
+          </div>
         </div>
       </div>
 
       {/* Location */}
-      <div className="flex items-center gap-1.5 mb-4">
-        <MapPin size={16} className="text-orange-400 shrink-0" strokeWidth={2.5} />
+      <div className="flex items-center gap-1.5">
+        <MapPin size={15} className="text-orange-400 shrink-0" strokeWidth={2.5} />
         <p className="text-muted-foreground text-sm">{listing.location_name}</p>
       </div>
 
-      {/* Stats */}
-      <div className="flex gap-2 mb-5">
+      {/* Stats — compact single row */}
+      <div className="flex gap-2">
         {listing.rooms && (
-          <div className="flex-1 bg-muted rounded-xl p-3 text-center">
-            <p className="text-foreground font-bold text-base">{listing.rooms}</p>
-            <p className="text-muted-foreground text-xs">
+          <div className="flex-1 bg-muted rounded-xl p-2.5 text-center">
+            <p className="text-foreground font-bold text-sm">{listing.rooms}</p>
+            <p className="text-muted-foreground text-[11px]">
               {listing.rooms === 1 ? "Room" : "Rooms"}
             </p>
           </div>
         )}
-        <div className="flex-1 bg-muted rounded-xl p-3 text-center">
-          <p className="text-foreground font-bold text-base">{listing.photos.length}</p>
-          <p className="text-muted-foreground text-xs">Photos</p>
+        <div className="flex-1 bg-muted rounded-xl p-2.5 text-center">
+          <p className="text-foreground font-bold text-sm">{listing.photos.length}</p>
+          <p className="text-muted-foreground text-[11px]">Photos</p>
         </div>
-        <div className="flex-1 bg-muted rounded-xl p-3 text-center">
-          <p className={`font-bold text-base capitalize ${styles.text}`}>{listing.type}</p>
-          <p className="text-muted-foreground text-xs">Type</p>
+        <div className="flex-1 bg-muted rounded-xl p-2.5 text-center">
+          <p className={`font-bold text-sm capitalize ${styles.text}`}>{listing.type}</p>
+          <p className="text-muted-foreground text-[11px]">Type</p>
         </div>
       </div>
 
-      {/* Description */}
+      {/* Description — clamped to 2 lines on desktop */}
       {listing.description && (
-        <p className="text-muted-foreground text-sm leading-relaxed mb-5">
+        <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">
           {listing.description}
         </p>
       )}
 
-      {/* Disclaimer */}
-      <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 mb-5 flex gap-3">
-        <span className="text-lg shrink-0">⚠️</span>
-        <p className="text-amber-600 dark:text-amber-400 text-sm leading-relaxed">
+      {/* Disclaimer — compact */}
+      <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 flex gap-2.5">
+        <span className="text-base shrink-0">⚠️</span>
+        <p className="text-amber-600 dark:text-amber-400 text-xs leading-relaxed">
           Always visit this space in person before making any payments to anyone.
         </p>
       </div>
 
       {/* Call Button */}
       <Button
-        className="w-full rounded-2xl py-6 text-base font-bold gap-2"
+        className="w-full rounded-2xl py-5 text-sm font-bold gap-2"
         onClick={() => window.open(`tel:${listing.phone_number}`)}
       >
         📞 Call {listing.phone_number}
@@ -128,6 +130,8 @@ export default function Feed() {
     setDetailOpen,
     setFilterSheetOpen,
     activeFilterCount,
+    activeTab,
+    setActiveTab,
   } = useFeed();
 
   const isMobile = useIsMobile();
@@ -218,7 +222,7 @@ export default function Feed() {
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
       >
-        {/* ── Current listing — leaves gap at bottom ────────────────────── */}
+        {/* ── Listing container with gap at bottom ─────────────────────── */}
         <div
           className="absolute inset-x-0 top-0 overflow-hidden"
           style={{ bottom: "52px", borderRadius: "0 0 24px 24px" }}
@@ -238,7 +242,27 @@ export default function Feed() {
           )}
 
           {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/90" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/90" />
+
+          {/* ── Floating Tabs — For You / Nearby / Saved ─────────────────── */}
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center bg-black/40 backdrop-blur-md rounded-full p-1 border border-white/10">
+            {(["foryou", "nearby", "saved"] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveTab(tab);
+                }}
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+                  activeTab === tab
+                    ? "bg-white text-black shadow-sm"
+                    : "text-white/70 hover:text-white"
+                }`}
+              >
+                {tab === "foryou" ? "For You" : tab === "nearby" ? "Nearby" : "Saved"}
+              </button>
+            ))}
+          </div>
 
           {/* Listing Progress — left side */}
           <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-1.5">
@@ -255,7 +279,7 @@ export default function Feed() {
             ))}
           </div>
 
-          {/* Photo Dots — floating inside listing above gap */}
+          {/* Photo Dots — floating inside listing */}
           {listing.photos.length > 1 && (
             <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-10 flex gap-1.5">
               {listing.photos.map((_, i) => (
@@ -271,7 +295,6 @@ export default function Feed() {
 
           {/* Bottom Content Overlay */}
           <div className="absolute bottom-20 left-4 right-20 z-10">
-            {/* Type Badge */}
             <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border mb-3 ${styles.bg} ${styles.border}`}>
               <div className={`w-1.5 h-1.5 rounded-full ${styles.dot}`} />
               <span className={`text-[11px] font-bold tracking-wide uppercase ${styles.text}`}>
@@ -279,18 +302,15 @@ export default function Feed() {
               </span>
             </div>
 
-            {/* Title */}
             <h2 className="text-white font-bold text-2xl leading-tight mb-1.5 drop-shadow-lg">
               {listing.title}
             </h2>
 
-            {/* Location */}
             <div className="flex items-center gap-1.5 mb-2">
               <MapPin size={18} className="text-orange-400 shrink-0" strokeWidth={2.5} />
               <span className="text-white/70 text-sm">{listing.location_name}</span>
             </div>
 
-            {/* Price */}
             <div className="flex items-baseline gap-1">
               <span className="text-white font-bold text-xl">
                 UGX {listing.price.toLocaleString()}
@@ -324,7 +344,7 @@ export default function Feed() {
           </div>
         </div>
 
-        {/* ── Gap strip — next listing peek ─────────────────────────────── */}
+        {/* ── Gap strip ────────────────────────────────────────────────────── */}
         <div
           className="absolute inset-x-0 bottom-0 flex items-center px-4"
           style={{ height: "52px" }}
@@ -335,7 +355,7 @@ export default function Feed() {
               <span className="text-muted-foreground text-xs font-medium truncate">
                 Next: {filteredListings[currentIndex + 1].title}
               </span>
-              <span className="text-muted-foreground text-xs ml-auto">
+              <span className="text-muted-foreground text-xs ml-auto shrink-0">
                 UGX {filteredListings[currentIndex + 1].price.toLocaleString()}
               </span>
             </div>
@@ -343,7 +363,7 @@ export default function Feed() {
         </div>
       </div>
 
-      {/* ── Detail Modal ──────────────────────────────────────────────────── */}
+      {/* ── Detail Modal ──────────────────────────────────────────────────────── */}
       {isMobile ? (
         <Sheet open={detailOpen} onOpenChange={setDetailOpen}>
           <SheetContent
@@ -361,13 +381,18 @@ export default function Feed() {
         </Sheet>
       ) : (
         <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-          <DialogContent className="w-[480px] max-w-[90vw] rounded-2xl px-6 pb-8 pt-2 max-h-[80vh] overflow-y-auto">
-            <DetailContent
-              listing={listing}
-              currentPhoto={currentPhoto}
-              setCurrentPhoto={setCurrentPhoto}
-              styles={styles}
-            />
+          <DialogContent
+            className="rounded-2xl overflow-hidden p-0"
+            style={{ width: "560px", maxWidth: "90vw", maxHeight: "70vh" }}
+          >
+            <div className="overflow-y-auto p-6" style={{ maxHeight: "70vh" }}>
+              <DetailContent
+                listing={listing}
+                currentPhoto={currentPhoto}
+                setCurrentPhoto={setCurrentPhoto}
+                styles={styles}
+              />
+            </div>
           </DialogContent>
         </Dialog>
       )}
