@@ -89,9 +89,7 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
     }
 
     setSuccess(true);
-    setTimeout(() => {
-      onSuccess();
-    }, 2000);
+    setTimeout(() => onSuccess(), 2000);
   }
 
   if (success) {
@@ -110,6 +108,7 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <div className="space-y-5">
+
       {/* Property Type */}
       <div>
         <p className="text-sm font-medium text-foreground mb-3">Property type</p>
@@ -329,13 +328,21 @@ export default function PostListingSheet({ open, onOpenChange }: PostListingShee
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl w-full rounded-2xl px-8 pb-8 pt-6 max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="mb-6">
-          <DialogTitle className="text-xl font-bold text-foreground">
-            Post a listing
-          </DialogTitle>
-        </DialogHeader>
-        <PostListingForm onSuccess={handleSuccess} />
+      <DialogContent
+        className="rounded-2xl overflow-hidden p-0"
+        style={{ width: "560px", maxWidth: "90vw", maxHeight: "75vh", overflowX: "hidden" }}
+      >
+        <div
+          className="overflow-y-auto p-6"
+          style={{ maxHeight: "75vh", scrollbarWidth: "none" }}
+        >
+          <DialogHeader className="mb-6">
+            <DialogTitle className="text-xl font-bold text-foreground">
+              Post a listing
+            </DialogTitle>
+          </DialogHeader>
+          <PostListingForm onSuccess={handleSuccess} />
+        </div>
       </DialogContent>
     </Dialog>
   );

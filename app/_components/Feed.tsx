@@ -27,10 +27,12 @@ function DetailContent({
 }) {
   return (
     <div className="px-1 space-y-4">
-
       {/* Photo strip */}
       {listing.photos.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div
+          className="flex gap-2 overflow-x-auto pb-1"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
           {listing.photos.map((p: string, i: number) => (
             <img
               key={i}
@@ -45,7 +47,7 @@ function DetailContent({
         </div>
       )}
 
-      {/* Type + Title + Price row */}
+      {/* Type + Title + Price */}
       <div>
         <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border mb-2 ${styles.bg} ${styles.border}`}>
           <div className={`w-1.5 h-1.5 rounded-full ${styles.dot}`} />
@@ -53,7 +55,6 @@ function DetailContent({
             {listing.type}
           </span>
         </div>
-
         <div className="flex items-start justify-between gap-3">
           <h2 className="text-foreground font-bold text-lg leading-tight flex-1 min-w-0">
             {listing.title}
@@ -73,7 +74,7 @@ function DetailContent({
         <p className="text-muted-foreground text-sm">{listing.location_name}</p>
       </div>
 
-      {/* Stats — compact single row */}
+      {/* Stats */}
       <div className="flex gap-2">
         {listing.rooms && (
           <div className="flex-1 bg-muted rounded-xl p-2.5 text-center">
@@ -93,14 +94,14 @@ function DetailContent({
         </div>
       </div>
 
-      {/* Description — clamped to 2 lines on desktop */}
+      {/* Description */}
       {listing.description && (
         <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">
           {listing.description}
         </p>
       )}
 
-      {/* Disclaimer — compact */}
+      {/* Disclaimer */}
       <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 flex gap-2.5">
         <span className="text-base shrink-0">⚠️</span>
         <p className="text-amber-600 dark:text-amber-400 text-xs leading-relaxed">
@@ -222,7 +223,7 @@ export default function Feed() {
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
       >
-        {/* ── Listing container with gap at bottom ─────────────────────── */}
+        {/* ── Listing container ─────────────────────────────────────────── */}
         <div
           className="absolute inset-x-0 top-0 overflow-hidden"
           style={{ bottom: "52px", borderRadius: "0 0 24px 24px" }}
@@ -244,8 +245,8 @@ export default function Feed() {
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/90" />
 
-          {/* ── Floating Tabs — For You / Nearby / Saved ─────────────────── */}
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center bg-black/40 backdrop-blur-md rounded-full p-1 border border-white/10">
+          {/* ── Floating Tabs — TikTok style ──────────────────────────────── */}
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-6">
             {(["foryou", "nearby", "saved"] as const).map((tab) => (
               <button
                 key={tab}
@@ -253,13 +254,16 @@ export default function Feed() {
                   e.stopPropagation();
                   setActiveTab(tab);
                 }}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+                className={`relative pb-1 text-sm font-semibold transition-all duration-200 ${
                   activeTab === tab
-                    ? "bg-white text-black shadow-sm"
-                    : "text-white/70 hover:text-white"
+                    ? "text-white"
+                    : "text-white/45 hover:text-white/70"
                 }`}
               >
                 {tab === "foryou" ? "For You" : tab === "nearby" ? "Nearby" : "Saved"}
+                {activeTab === tab && (
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-white rounded-full" />
+                )}
               </button>
             ))}
           </div>
@@ -279,7 +283,7 @@ export default function Feed() {
             ))}
           </div>
 
-          {/* Photo Dots — floating inside listing */}
+          {/* Photo Dots */}
           {listing.photos.length > 1 && (
             <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-10 flex gap-1.5">
               {listing.photos.map((_, i) => (
@@ -383,9 +387,12 @@ export default function Feed() {
         <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
           <DialogContent
             className="rounded-2xl overflow-hidden p-0"
-            style={{ width: "560px", maxWidth: "90vw", maxHeight: "70vh" }}
+            style={{ width: "560px", maxWidth: "90vw", maxHeight: "70vh", overflowX: "hidden" }}
           >
-            <div className="overflow-y-auto p-6" style={{ maxHeight: "70vh" }}>
+            <div
+              className="overflow-y-auto p-6"
+              style={{ maxHeight: "70vh", scrollbarWidth: "none" }}
+            >
               <DetailContent
                 listing={listing}
                 currentPhoto={currentPhoto}
