@@ -10,7 +10,8 @@ export default function BottomNavMobile() {
 
   return (
     <>
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
+      {/* Raised up like Pinterest — bottom-8 */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
         <div className="flex items-center gap-1 bg-background/90 backdrop-blur-xl border border-border rounded-full px-3 py-2 shadow-lg">
           {[
             { id: "home", icon: Home },

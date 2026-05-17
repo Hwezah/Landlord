@@ -7,6 +7,10 @@ import {
   Sheet,
   SheetContent,
 } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 const typeStyles = {
@@ -14,6 +18,112 @@ const typeStyles = {
   office: { bg: "bg-blue-500/20", text: "text-blue-400", border: "border-blue-500/30", dot: "bg-blue-400" },
   shop: { bg: "bg-amber-500/20", text: "text-amber-400", border: "border-amber-500/30", dot: "bg-amber-400" },
 };
+
+// ── Reusable detail content ───────────────────────────────────────────────────
+function DetailContent({
+  listing,
+  currentPhoto,
+  setCurrentPhoto,
+  styles,
+}: {
+  listing: any;
+  currentPhoto: number;
+  setCurrentPhoto: (i: number) => void;
+  styles: typeof typeStyles.house;
+}) {
+  return (
+    <div>
+      <div className="w-9 h-1 rounded-full bg-border mx-auto mb-5" />
+
+      {/* Photo strip */}
+      {listing.photos.length > 0 && (
+        <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
+          {listing.photos.map((p: string, i: number) => (
+            <img
+              key={i}
+              src={p}
+              alt={`Photo ${i + 1}`}
+              className={`h-20 w-32 object-cover rounded-xl flex-shrink-0 cursor-pointer transition-all ${
+                i === currentPhoto ? "ring-2 ring-primary" : "opacity-70"
+              }`}
+              onClick={() => setCurrentPhoto(i)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Type badge */}
+      <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border mb-3 ${styles.bg} ${styles.border}`}>
+        <div className={`w-1.5 h-1.5 rounded-full ${styles.dot}`} />
+        <span className={`text-[11px] font-bold tracking-wide uppercase ${styles.text}`}>
+          {listing.type}
+        </span>
+      </div>
+
+      {/* Title + Price */}
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <h2 className="text-foreground font-bold text-xl leading-tight flex-1">
+          {listing.title}
+        </h2>
+        <div className="text-right shrink-0">
+          <p className="text-foreground font-bold text-lg">
+            UGX {listing.price.toLocaleString()}
+          </p>
+          <p className="text-muted-foreground text-xs">/month</p>
+        </div>
+      </div>
+
+      {/* Location */}
+      <div className="flex items-center gap-1.5 mb-4">
+        <MapPin size={16} className="text-orange-400 shrink-0" strokeWidth={2.5} />
+        <p className="text-muted-foreground text-sm">{listing.location_name}</p>
+      </div>
+
+      {/* Stats */}
+      <div className="flex gap-2 mb-5">
+        {listing.rooms && (
+          <div className="flex-1 bg-muted rounded-xl p-3 text-center">
+            <p className="text-foreground font-bold text-base">{listing.rooms}</p>
+            <p className="text-muted-foreground text-xs">
+              {listing.rooms === 1 ? "Room" : "Rooms"}
+            </p>
+          </div>
+        )}
+        <div className="flex-1 bg-muted rounded-xl p-3 text-center">
+          <p className="text-foreground font-bold text-base">{listing.photos.length}</p>
+          <p className="text-muted-foreground text-xs">Photos</p>
+        </div>
+        <div className="flex-1 bg-muted rounded-xl p-3 text-center">
+          <p className={`font-bold text-base capitalize ${styles.text}`}>{listing.type}</p>
+          <p className="text-muted-foreground text-xs">Type</p>
+        </div>
+      </div>
+
+      {/* Description */}
+      {listing.description && (
+        <p className="text-muted-foreground text-sm leading-relaxed mb-5">
+          {listing.description}
+        </p>
+      )}
+
+      {/* Disclaimer */}
+      <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 mb-5 flex gap-3">
+        <span className="text-lg shrink-0">⚠️</span>
+        <p className="text-amber-600 dark:text-amber-400 text-sm leading-relaxed">
+          Always visit this space in person before making any payments to anyone.
+        </p>
+      </div>
+
+      {/* Call Button */}
+      <Button
+        className="w-full rounded-2xl py-6 text-base font-bold gap-2"
+        onClick={() => window.open(`tel:${listing.phone_number}`)}
+      >
+        📞 Call {listing.phone_number}
+      </Button>
+    </div>
+  );
+}
 
 export default function Feed() {
   const {
@@ -149,22 +259,8 @@ export default function Feed() {
           ))}
         </div>
 
-        {/* Photo Dots — top center */}
-        {listing.photos.length > 1 && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex gap-1.5">
-            {listing.photos.map((_, i) => (
-              <div
-                key={i}
-                className={`h-1 rounded-full transition-all duration-300 ${
-                  i === currentPhoto ? "w-5 bg-white" : "w-1.5 bg-white/40"
-                }`}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Bottom Content Overlay */}
-        <div className="absolute bottom-6 left-4 right-20 z-10">
+        {/* Bottom Content Overlay — raised up */}
+        <div className="absolute bottom-32 left-4 right-20 z-10">
 
           {/* Type Badge */}
           <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border mb-3 ${styles.bg} ${styles.border}`}>
@@ -179,13 +275,12 @@ export default function Feed() {
             {listing.title}
           </h2>
 
-          {/* Location — orange MapPin */}
+          {/* Location — orange MapPin with hole */}
           <div className="flex items-center gap-1.5 mb-2">
             <MapPin
-              size={14}
+              size={18}
               className="text-orange-400 shrink-0"
-              fill="currentColor"
-              strokeWidth={0}
+              strokeWidth={2.5}
             />
             <span className="text-white/70 text-sm">{listing.location_name}</span>
           </div>
@@ -199,9 +294,22 @@ export default function Feed() {
           </div>
         </div>
 
-        {/* Right Side Floating Actions — icons only */}
-        <div className="absolute right-3 bottom-6 z-10 flex flex-col gap-3">
+        {/* Photo Dots — bottom above nav */}
+        {listing.photos.length > 1 && (
+          <div className="absolute bottom-20 right-4 z-10 flex gap-1.5">
+            {listing.photos.map((_, i) => (
+              <div
+                key={i}
+                className={`h-1 rounded-full transition-all duration-300 ${
+                  i === currentPhoto ? "w-5 bg-white" : "w-1.5 bg-white/40"
+                }`}
+              />
+            ))}
+          </div>
+        )}
 
+        {/* Right Side Floating Actions — raised up */}
+        <div className="absolute right-3 bottom-32 z-10 flex flex-col gap-3">
           {/* Save */}
           <button className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95">
             <Heart size={18} className="text-white" />
@@ -229,115 +337,42 @@ export default function Feed() {
           </button>
         </div>
 
-        {/* Swipe hint */}
-        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 z-10">
-          <p className="text-white/25 text-[10px]">
-            ← photos · swipe up next ↑
-          </p>
-        </div>
+        {/* Gap between listings — subtle bottom fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/60 to-transparent z-10 pointer-events-none" />
       </div>
 
-      {/* ── Detail Sheet ─────────────────────────────────────────────────────── */}
-      <Sheet open={detailOpen} onOpenChange={setDetailOpen}>
-        <SheetContent
-          side="bottom"
-          className="rounded-t-3xl max-h-[85vh] overflow-y-auto px-5 pb-10"
-        >
-          <div className="w-9 h-1 rounded-full bg-border mx-auto mb-5" />
+      {/* ── Detail — Sheet on mobile, Dialog on tablet/desktop ───────────────── */}
 
-          {/* Photo strip */}
-          {listing.photos.length > 0 && (
-            <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
-              {listing.photos.map((p, i) => (
-                <img
-                  key={i}
-                  src={p}
-                  alt={`Photo ${i + 1}`}
-                  className={`h-20 w-32 object-cover rounded-xl flex-shrink-0 cursor-pointer transition-all ${
-                    i === currentPhoto ? "ring-2 ring-primary" : "opacity-70"
-                  }`}
-                  onClick={() => setCurrentPhoto(i)}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Type badge */}
-          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border mb-3 ${styles.bg} ${styles.border}`}>
-            <div className={`w-1.5 h-1.5 rounded-full ${styles.dot}`} />
-            <span className={`text-[11px] font-bold tracking-wide uppercase ${styles.text}`}>
-              {listing.type}
-            </span>
-          </div>
-
-          {/* Title + Price */}
-          <div className="flex items-start justify-between gap-3 mb-2">
-            <h2 className="text-foreground font-bold text-xl leading-tight flex-1">
-              {listing.title}
-            </h2>
-            <div className="text-right shrink-0">
-              <p className="text-foreground font-bold text-lg">
-                UGX {listing.price.toLocaleString()}
-              </p>
-              <p className="text-muted-foreground text-xs">/month</p>
-            </div>
-          </div>
-
-          {/* Location */}
-          <div className="flex items-center gap-1.5 mb-4">
-            <MapPin
-              size={14}
-              className="text-orange-400 shrink-0"
-              fill="currentColor"
-              strokeWidth={0}
-            />
-            <p className="text-muted-foreground text-sm">{listing.location_name}</p>
-          </div>
-
-          {/* Stats */}
-          <div className="flex gap-2 mb-5">
-            {listing.rooms && (
-              <div className="flex-1 bg-muted rounded-xl p-3 text-center">
-                <p className="text-foreground font-bold text-base">{listing.rooms}</p>
-                <p className="text-muted-foreground text-xs">
-                  {listing.rooms === 1 ? "Room" : "Rooms"}
-                </p>
-              </div>
-            )}
-            <div className="flex-1 bg-muted rounded-xl p-3 text-center">
-              <p className="text-foreground font-bold text-base">{listing.photos.length}</p>
-              <p className="text-muted-foreground text-xs">Photos</p>
-            </div>
-            <div className="flex-1 bg-muted rounded-xl p-3 text-center">
-              <p className={`font-bold text-base capitalize ${styles.text}`}>{listing.type}</p>
-              <p className="text-muted-foreground text-xs">Type</p>
-            </div>
-          </div>
-
-          {/* Description */}
-          {listing.description && (
-            <p className="text-muted-foreground text-sm leading-relaxed mb-5">
-              {listing.description}
-            </p>
-          )}
-
-          {/* Disclaimer */}
-          <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 mb-5 flex gap-3">
-            <span className="text-lg shrink-0">⚠️</span>
-            <p className="text-amber-600 dark:text-amber-400 text-sm leading-relaxed">
-              Always visit this space in person before making any payments to anyone.
-            </p>
-          </div>
-
-          {/* Call Button — triggers phone dialer */}
-          <Button
-            className="w-full rounded-2xl py-6 text-base font-bold gap-2"
-            onClick={() => window.open(`tel:${listing.phone_number}`)}
+      {/* Mobile sheet */}
+      <div className="md:hidden">
+        <Sheet open={detailOpen} onOpenChange={setDetailOpen}>
+          <SheetContent
+            side="bottom"
+            className="rounded-t-3xl max-h-[85vh] overflow-y-auto px-5 pb-10"
           >
-            📞 Call {listing.phone_number}
-          </Button>
-        </SheetContent>
-      </Sheet>
+            <DetailContent
+              listing={listing}
+              currentPhoto={currentPhoto}
+              setCurrentPhoto={setCurrentPhoto}
+              styles={styles}
+            />
+          </SheetContent>
+        </Sheet>
+      </div>
+
+      {/* Tablet and desktop dialog */}
+      <div className="hidden md:block">
+        <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+          <DialogContent className="max-w-lg rounded-2xl px-6 pb-8 pt-6 max-h-[85vh] overflow-y-auto">
+            <DetailContent
+              listing={listing}
+              currentPhoto={currentPhoto}
+              setCurrentPhoto={setCurrentPhoto}
+              styles={styles}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
     </>
   );
 }

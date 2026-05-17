@@ -20,7 +20,7 @@ export type FilterState = {
   location: string;
 };
 
-type ActiveTab = "foryou" | "nearby";
+type ActiveTab = "foryou" | "nearby" | "saved";
 
 type FeedContextValue = {
   // Listings

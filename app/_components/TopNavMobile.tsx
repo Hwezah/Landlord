@@ -7,12 +7,17 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useFeed } from "@/app/providers/feed-provider";
 import type { PropertyType, PriceRange } from "@/app/providers/feed-provider";
 
-// ── Price range labels ────────────────────────────────────────────────────────
 const priceLabels: Record<PriceRange, string> = {
   any: "Any price",
   under300: "Under 300k",
@@ -20,22 +25,133 @@ const priceLabels: Record<PriceRange, string> = {
   over700: "700k+",
 };
 
-const tabLabels: Record<"foryou" | "nearby", string> = {
+const tabLabels: Record<"foryou" | "nearby" | "saved", string> = {
   foryou: "For You",
   nearby: "Nearby",
+  saved: "Saved",
 };
+
+// ── Reusable filter content ───────────────────────────────────────────────────
+function FilterContent({
+  onApply,
+}: {
+  onApply: () => void;
+}) {
+  const {
+    filters,
+    setFilters,
+    resetFilters,
+    activeFilterCount,
+  } = useFeed();
+
+  return (
+    <div className="space-y-6">
+      {/* Property Type */}
+      <div>
+        <p className="text-sm font-medium text-foreground mb-3">Property type</p>
+        <div className="grid grid-cols-4 gap-2">
+          {(["all", "house", "office", "shop"] as PropertyType[]).map((type) => (
+            <button
+              key={type}
+              onClick={() => setFilters({ ...filters, type })}
+              className={`py-2 rounded-xl text-sm font-medium capitalize transition-all ${
+                filters.type === type
+                  ? "bg-foreground text-background"
+                  : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
+              }`}
+            >
+              {type === "all" ? "All" : `${type}s`}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Price Range */}
+      <div>
+        <p className="text-sm font-medium text-foreground mb-3">Monthly price (UGX)</p>
+        <div className="grid grid-cols-2 gap-2">
+          {(Object.keys(priceLabels) as PriceRange[]).map((range) => (
+            <button
+              key={range}
+              onClick={() => setFilters({ ...filters, priceRange: range })}
+              className={`py-2.5 rounded-xl text-sm font-medium transition-all ${
+                filters.priceRange === range
+                  ? "bg-foreground text-background"
+                  : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
+              }`}
+            >
+              {priceLabels[range]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Rooms */}
+      {(filters.type === "house" || filters.type === "all") && (
+        <div>
+          <p className="text-sm font-medium text-foreground mb-3">Bedrooms</p>
+          <div className="grid grid-cols-4 gap-2">
+            {["any", "1", "2", "3+"].map((room) => (
+              <button
+                key={room}
+                onClick={() => setFilters({ ...filters, rooms: room })}
+                className={`py-2 rounded-xl text-sm font-medium transition-all ${
+                  filters.rooms === room
+                    ? "bg-foreground text-background"
+                    : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
+                }`}
+              >
+                {room === "any" ? "Any" : room}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Location */}
+      <div>
+        <p className="text-sm font-medium text-foreground mb-3">Location</p>
+        <Input
+          type="text"
+          placeholder="e.g. Ntinda, Kisaasi, Kololo..."
+          value={filters.location}
+          onChange={(e) => setFilters({ ...filters, location: e.target.value })}
+          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary"
+        />
+      </div>
+
+      {/* Reset + Apply */}
+      <div className="flex gap-3">
+        {activeFilterCount > 0 && (
+          <Button
+            variant="outline"
+            onClick={resetFilters}
+            className="flex-1 rounded-2xl py-6 text-sm font-semibold"
+          >
+            Reset
+          </Button>
+        )}
+        <Button
+          onClick={onApply}
+          className="flex-1 rounded-2xl py-6 text-sm font-semibold"
+        >
+          Show listings
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export default function TopNavMobile() {
   const {
     activeTab,
     setActiveTab,
-    filters,
-    setFilters,
     applyFilters,
-    resetFilters,
     activeFilterCount,
     filterSheetOpen,
     setFilterSheetOpen,
+    filters,
+    setFilters,
   } = useFeed();
 
   function handleApply() {
@@ -55,13 +171,13 @@ export default function TopNavMobile() {
               Landlord
             </span>
 
-            {/* ── Mobile: For You / Nearby Tabs ─────────────────────────── */}
+            {/* ── Mobile: Three Tabs ─────────────────────────────────────── */}
             <div className="flex md:hidden items-center bg-muted rounded-full p-1">
-              {(["foryou", "nearby"] as const).map((tab) => (
+              {(["foryou", "nearby", "saved"] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-5 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
                     activeTab === tab
                       ? "bg-card text-foreground shadow-sm"
                       : "text-muted-foreground"
@@ -74,23 +190,23 @@ export default function TopNavMobile() {
 
             {/* ── Desktop: Category Links ────────────────────────────────── */}
             <nav className="hidden md:flex items-center flex-1 justify-center gap-6">
-              {(["all", "house", "office", "shop"] as PropertyType[]).map((type) => (
-                <button
-                  key={type}
-                  onClick={() => {
-                    setFilters({ ...filters, type });
-                    applyFilters();
-                  }}
-                  className={`text-sm font-medium capitalize transition-colors pb-0.5 ${
-                    filters.type === type
-                      ? "text-foreground border-b-2 border-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {type === "all" ? "All" : `${type}s`}
-                </button>
-              ))}
-            </nav>
+  {(["all", "house", "office", "shop"] as PropertyType[]).map((type) => (
+    <button
+      key={type}
+      onClick={() => {
+        setFilters({ ...filters, type });
+        applyFilters();
+      }}
+      className={`text-sm font-medium capitalize transition-colors pb-0.5 ${
+        filters.type === type
+          ? "text-foreground border-b-2 border-foreground"
+          : "text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      {type === "all" ? "All" : `${type}s`}
+    </button>
+  ))}
+</nav>
 
             {/* ── Desktop: Right Actions ─────────────────────────────────── */}
             <div className="hidden md:flex items-center gap-3">
@@ -107,124 +223,45 @@ export default function TopNavMobile() {
                   </span>
                 )}
               </Button>
-
-              <Button className="rounded-full">
-                + Post Listing
-              </Button>
+              <Button className="rounded-full">+ Post Listing</Button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* ── Filter Sheet ───────────────────────────────────────────────────── */}
-      <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
-        <SheetContent
-          side="bottom"
-          className="rounded-t-3xl max-h-[90vh] overflow-y-auto px-5 pb-8"
-        >
-          <div className="w-9 h-1 rounded-full bg-border mx-auto mb-4" />
+      {/* ── Filter — Sheet on mobile, Dialog on tablet/desktop ───────────────── */}
 
-          <SheetHeader className="flex flex-row items-center justify-between pb-4 border-b border-border mb-5">
-            <SheetTitle className="text-base font-semibold text-foreground">
-              Filter listings
-            </SheetTitle>
-            {activeFilterCount > 0 && (
-              <button
-                onClick={resetFilters}
-                className="text-sm text-primary font-medium"
-              >
-                Reset
-              </button>
-            )}
-          </SheetHeader>
+      {/* Mobile sheet */}
+      <div className="md:hidden">
+        <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
+          <SheetContent
+            side="bottom"
+            className="rounded-t-3xl max-h-[90vh] overflow-y-auto px-5 pb-8"
+          >
+            <div className="w-9 h-1 rounded-full bg-border mx-auto mb-4" />
+            <SheetHeader className="flex flex-row items-center justify-between pb-4 border-b border-border mb-5">
+              <SheetTitle className="text-base font-semibold text-foreground">
+                Filter listings
+              </SheetTitle>
+            </SheetHeader>
+            <FilterContent onApply={handleApply} />
+          </SheetContent>
+        </Sheet>
+      </div>
 
-          <div className="space-y-6">
-
-            {/* Property Type */}
-            <div>
-              <p className="text-sm font-medium text-foreground mb-3">Property type</p>
-              <div className="grid grid-cols-4 gap-2">
-                {(["all", "house", "office", "shop"] as PropertyType[]).map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => setFilters({ ...filters, type })}
-                    className={`py-2 rounded-xl text-sm font-medium capitalize transition-all ${
-                      filters.type === type
-                        ? "bg-foreground text-background"
-                        : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
-                    }`}
-                  >
-                    {type === "all" ? "All" : `${type}s`}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Price Range */}
-            <div>
-              <p className="text-sm font-medium text-foreground mb-3">Monthly price (UGX)</p>
-              <div className="grid grid-cols-2 gap-2">
-                {(Object.keys(priceLabels) as PriceRange[]).map((range) => (
-                  <button
-                    key={range}
-                    onClick={() => setFilters({ ...filters, priceRange: range })}
-                    className={`py-2.5 rounded-xl text-sm font-medium transition-all ${
-                      filters.priceRange === range
-                        ? "bg-foreground text-background"
-                        : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
-                    }`}
-                  >
-                    {priceLabels[range]}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Rooms */}
-            {(filters.type === "house" || filters.type === "all") && (
-              <div>
-                <p className="text-sm font-medium text-foreground mb-3">Bedrooms</p>
-                <div className="grid grid-cols-4 gap-2">
-                  {["any", "1", "2", "3+"].map((room) => (
-                    <button
-                      key={room}
-                      onClick={() => setFilters({ ...filters, rooms: room })}
-                      className={`py-2 rounded-xl text-sm font-medium transition-all ${
-                        filters.rooms === room
-                          ? "bg-foreground text-background"
-                          : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
-                      }`}
-                    >
-                      {room === "any" ? "Any" : room}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Location */}
-            <div>
-              <p className="text-sm font-medium text-foreground mb-3">Location</p>
-              <Input
-                type="text"
-                placeholder="e.g. Ntinda, Kisaasi, Kololo..."
-                value={filters.location}
-                onChange={(e) => setFilters({ ...filters, location: e.target.value })}
-                className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary"
-              />
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <Button
-              onClick={handleApply}
-              className="w-full rounded-2xl py-6 text-sm font-semibold"
-            >
-              Show listings
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
+      {/* Tablet and desktop dialog */}
+      <div className="hidden md:block">
+        <Dialog open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
+          <DialogContent className="max-w-md rounded-2xl px-6 pb-8 pt-6">
+            <DialogHeader className="mb-5 pb-4 border-b border-border">
+              <DialogTitle className="text-base font-semibold text-foreground">
+                Filter listings
+              </DialogTitle>
+            </DialogHeader>
+            <FilterContent onApply={handleApply} />
+          </DialogContent>
+        </Dialog>
+      </div>
     </>
   );
 }
