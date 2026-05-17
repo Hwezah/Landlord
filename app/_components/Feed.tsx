@@ -3,15 +3,10 @@
 import { useRef, useCallback, useEffect } from "react";
 import { useFeed } from "@/app/providers/feed-provider";
 import { SlidersHorizontal, Info, Heart, MapPin } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-} from "@/components/ui/sheet";
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const typeStyles = {
   house: { bg: "bg-emerald-500/20", text: "text-emerald-400", border: "border-emerald-500/30", dot: "bg-emerald-400" },
@@ -19,7 +14,6 @@ const typeStyles = {
   shop: { bg: "bg-amber-500/20", text: "text-amber-400", border: "border-amber-500/30", dot: "bg-amber-400" },
 };
 
-// ── Reusable detail content ───────────────────────────────────────────────────
 function DetailContent({
   listing,
   currentPhoto,
@@ -32,9 +26,7 @@ function DetailContent({
   styles: typeof typeStyles.house;
 }) {
   return (
-    <div>
-      <div className="w-9 h-1 rounded-full bg-border mx-auto mb-5" />
-
+    <div className="px-1">
       {/* Photo strip */}
       {listing.photos.length > 0 && (
         <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
@@ -43,8 +35,8 @@ function DetailContent({
               key={i}
               src={p}
               alt={`Photo ${i + 1}`}
-              className={`h-20 w-32 object-cover rounded-xl flex-shrink-0 cursor-pointer transition-all ${
-                i === currentPhoto ? "ring-2 ring-primary" : "opacity-70"
+              className={`h-24 w-36 object-cover rounded-xl flex-shrink-0 cursor-pointer transition-all ${
+                i === currentPhoto ? "ring-2 ring-primary" : "opacity-60"
               }`}
               onClick={() => setCurrentPhoto(i)}
             />
@@ -61,7 +53,7 @@ function DetailContent({
       </div>
 
       {/* Title + Price */}
-      <div className="flex items-start justify-between gap-3 mb-2">
+      <div className="flex items-start justify-between gap-4 mb-2">
         <h2 className="text-foreground font-bold text-xl leading-tight flex-1">
           {listing.title}
         </h2>
@@ -138,6 +130,7 @@ export default function Feed() {
     activeFilterCount,
   } = useFeed();
 
+  const isMobile = useIsMobile();
   const touchStartY = useRef<number | null>(null);
   const touchStartX = useRef<number | null>(null);
   const mouseStart = useRef<{ x: number; y: number } | null>(null);
@@ -218,15 +211,19 @@ export default function Feed() {
     <>
       {/* ── Full Screen Feed ──────────────────────────────────────────────── */}
       <div
-        className="relative w-full flex-1 bg-black select-none cursor-grab active:cursor-grabbing overflow-hidden"
+        className="relative w-full flex-1 bg-black select-none cursor-grab active:cursor-grabbing"
         style={{ height: "calc(100vh - 56px)" }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
       >
-        {/* Background Photo */}
-        <div className="absolute inset-0 transition-all duration-500">
+        {/* ── Current listing — slightly scaled with gap at bottom ────────── */}
+        <div
+          className="absolute inset-x-0 top-0 overflow-hidden transition-all duration-300"
+          style={{ bottom: "48px", borderRadius: "0 0 20px 20px" }}
+        >
+          {/* Background Photo */}
           {photo ? (
             <img
               src={photo}
@@ -239,117 +236,119 @@ export default function Feed() {
               <span className="text-8xl opacity-20">🏠</span>
             </div>
           )}
-        </div>
 
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/90" />
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/90" />
 
-        {/* Listing Progress — left side */}
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-1.5">
-          {filteredListings.map((_, i) => (
-            <div
-              key={i}
-              onClick={() => setCurrentIndex(i)}
-              className={`w-1 rounded-full cursor-pointer transition-all duration-300 ${
-                i === currentIndex
-                  ? "h-6 bg-white"
-                  : "h-2 bg-white/30 hover:bg-white/50"
-              }`}
-            />
-          ))}
-        </div>
-
-        {/* Bottom Content Overlay — raised up */}
-        <div className="absolute bottom-32 left-4 right-20 z-10">
-
-          {/* Type Badge */}
-          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border mb-3 ${styles.bg} ${styles.border}`}>
-            <div className={`w-1.5 h-1.5 rounded-full ${styles.dot}`} />
-            <span className={`text-[11px] font-bold tracking-wide uppercase ${styles.text}`}>
-              {listing.type}
-            </span>
-          </div>
-
-          {/* Title */}
-          <h2 className="text-white font-bold text-2xl leading-tight mb-1.5 drop-shadow-lg">
-            {listing.title}
-          </h2>
-
-          {/* Location — orange MapPin with hole */}
-          <div className="flex items-center gap-1.5 mb-2">
-            <MapPin
-              size={18}
-              className="text-orange-400 shrink-0"
-              strokeWidth={2.5}
-            />
-            <span className="text-white/70 text-sm">{listing.location_name}</span>
-          </div>
-
-          {/* Price */}
-          <div className="flex items-baseline gap-1">
-            <span className="text-white font-bold text-xl">
-              UGX {listing.price.toLocaleString()}
-            </span>
-            <span className="text-white/50 text-sm">/mo</span>
-          </div>
-        </div>
-
-        {/* Photo Dots — bottom above nav */}
-        {listing.photos.length > 1 && (
-          <div className="absolute bottom-20 right-4 z-10 flex gap-1.5">
-            {listing.photos.map((_, i) => (
+          {/* Listing Progress — left side */}
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-1.5">
+            {filteredListings.map((_, i) => (
               <div
                 key={i}
-                className={`h-1 rounded-full transition-all duration-300 ${
-                  i === currentPhoto ? "w-5 bg-white" : "w-1.5 bg-white/40"
+                onClick={() => setCurrentIndex(i)}
+                className={`w-1 rounded-full cursor-pointer transition-all duration-300 ${
+                  i === currentIndex
+                    ? "h-6 bg-white"
+                    : "h-2 bg-white/30 hover:bg-white/50"
                 }`}
               />
             ))}
           </div>
-        )}
 
-        {/* Right Side Floating Actions — raised up */}
-        <div className="absolute right-3 bottom-32 z-10 flex flex-col gap-3">
-          {/* Save */}
-          <button className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95">
-            <Heart size={18} className="text-white" />
-          </button>
-
-          {/* Info */}
-          <button
-            onClick={() => setDetailOpen(true)}
-            className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
-          >
-            <Info size={18} className="text-white" />
-          </button>
-
-          {/* Filter */}
-          <button
-            onClick={() => setFilterSheetOpen(true)}
-            className="relative w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
-          >
-            <SlidersHorizontal size={18} className="text-white" />
-            {activeFilterCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">
-                {activeFilterCount}
+          {/* Bottom Content Overlay */}
+          <div className="absolute bottom-10 left-4 right-20 z-10">
+            {/* Type Badge */}
+            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border mb-3 ${styles.bg} ${styles.border}`}>
+              <div className={`w-1.5 h-1.5 rounded-full ${styles.dot}`} />
+              <span className={`text-[11px] font-bold tracking-wide uppercase ${styles.text}`}>
+                {listing.type}
               </span>
-            )}
-          </button>
+            </div>
+
+            {/* Title */}
+            <h2 className="text-white font-bold text-2xl leading-tight mb-1.5 drop-shadow-lg">
+              {listing.title}
+            </h2>
+
+            {/* Location */}
+            <div className="flex items-center gap-1.5 mb-2">
+              <MapPin size={18} className="text-orange-400 shrink-0" strokeWidth={2.5} />
+              <span className="text-white/70 text-sm">{listing.location_name}</span>
+            </div>
+
+            {/* Price */}
+            <div className="flex items-baseline gap-1">
+              <span className="text-white font-bold text-xl">
+                UGX {listing.price.toLocaleString()}
+              </span>
+              <span className="text-white/50 text-sm">/mo</span>
+            </div>
+          </div>
+
+          {/* Right Side Floating Actions */}
+          <div className="absolute right-3 bottom-10 z-10 flex flex-col gap-3">
+            <button className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95">
+              <Heart size={18} className="text-white" />
+            </button>
+            <button
+              onClick={() => setDetailOpen(true)}
+              className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
+            >
+              <Info size={18} className="text-white" />
+            </button>
+            <button
+              onClick={() => setFilterSheetOpen(true)}
+              className="relative w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
+            >
+              <SlidersHorizontal size={18} className="text-white" />
+              {activeFilterCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
 
-        {/* Gap between listings — subtle bottom fade */}
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/60 to-transparent z-10 pointer-events-none" />
+        {/* ── Gap strip — peek of next listing ─────────────────────────────── */}
+        <div
+          className="absolute inset-x-0 bottom-0 flex items-center justify-between px-4"
+          style={{ height: "48px" }}
+        >
+          {/* Photo dots — bottom center above nav */}
+          {listing.photos.length > 1 && (
+            <div className="absolute left-1/2 -translate-x-1/2 flex gap-1.5">
+              {listing.photos.map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-1 rounded-full transition-all duration-300 ${
+                    i === currentPhoto ? "w-5 bg-foreground" : "w-1.5 bg-foreground/30"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Next listing peek info */}
+          {filteredListings[currentIndex + 1] && (
+            <div className="absolute right-4 flex items-center gap-1.5">
+              <span className="text-muted-foreground text-xs font-medium">
+                Next: {filteredListings[currentIndex + 1].title}
+              </span>
+              <span className="text-muted-foreground text-xs">↑</span>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* ── Detail — Sheet on mobile, Dialog on tablet/desktop ───────────────── */}
-
-      {/* Mobile sheet */}
-      <div className="md:hidden">
+      {/* ── Detail Modal ──────────────────────────────────────────────────────── */}
+      {isMobile ? (
         <Sheet open={detailOpen} onOpenChange={setDetailOpen}>
           <SheetContent
             side="bottom"
             className="rounded-t-3xl max-h-[85vh] overflow-y-auto px-5 pb-10"
           >
+            <div className="w-9 h-1 rounded-full bg-border mx-auto mb-5" />
             <DetailContent
               listing={listing}
               currentPhoto={currentPhoto}
@@ -358,12 +357,9 @@ export default function Feed() {
             />
           </SheetContent>
         </Sheet>
-      </div>
-
-      {/* Tablet and desktop dialog */}
-      <div className="hidden md:block">
+      ) : (
         <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-          <DialogContent className="max-w-lg rounded-2xl px-6 pb-8 pt-6 max-h-[85vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl w-full rounded-2xl px-8 pb-8 pt-6 max-h-[85vh] overflow-y-auto">
             <DetailContent
               listing={listing}
               currentPhoto={currentPhoto}
@@ -372,7 +368,7 @@ export default function Feed() {
             />
           </DialogContent>
         </Dialog>
-      </div>
+      )}
     </>
   );
 }

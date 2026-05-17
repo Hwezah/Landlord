@@ -1,21 +1,12 @@
 "use client";
 
 import { SlidersHorizontal } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useFeed } from "@/app/providers/feed-provider";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { PropertyType, PriceRange } from "@/app/providers/feed-provider";
 
 const priceLabels: Record<PriceRange, string> = {
@@ -31,18 +22,8 @@ const tabLabels: Record<"foryou" | "nearby" | "saved", string> = {
   saved: "Saved",
 };
 
-// ── Reusable filter content ───────────────────────────────────────────────────
-function FilterContent({
-  onApply,
-}: {
-  onApply: () => void;
-}) {
-  const {
-    filters,
-    setFilters,
-    resetFilters,
-    activeFilterCount,
-  } = useFeed();
+function FilterContent({ onApply }: { onApply: () => void }) {
+  const { filters, setFilters, resetFilters, activeFilterCount } = useFeed();
 
   return (
     <div className="space-y-6">
@@ -120,7 +101,7 @@ function FilterContent({
         />
       </div>
 
-      {/* Reset + Apply */}
+      {/* Buttons */}
       <div className="flex gap-3">
         {activeFilterCount > 0 && (
           <Button
@@ -153,6 +134,8 @@ export default function TopNavMobile() {
     filters,
     setFilters,
   } = useFeed();
+
+  const isMobile = useIsMobile();
 
   function handleApply() {
     applyFilters();
@@ -190,23 +173,23 @@ export default function TopNavMobile() {
 
             {/* ── Desktop: Category Links ────────────────────────────────── */}
             <nav className="hidden md:flex items-center flex-1 justify-center gap-6">
-  {(["all", "house", "office", "shop"] as PropertyType[]).map((type) => (
-    <button
-      key={type}
-      onClick={() => {
-        setFilters({ ...filters, type });
-        applyFilters();
-      }}
-      className={`text-sm font-medium capitalize transition-colors pb-0.5 ${
-        filters.type === type
-          ? "text-foreground border-b-2 border-foreground"
-          : "text-muted-foreground hover:text-foreground"
-      }`}
-    >
-      {type === "all" ? "All" : `${type}s`}
-    </button>
-  ))}
-</nav>
+              {(["all", "house", "office", "shop"] as PropertyType[]).map((type) => (
+                <button
+                  key={type}
+                  onClick={() => {
+                    setFilters({ ...filters, type });
+                    applyFilters();
+                  }}
+                  className={`text-sm font-medium capitalize transition-colors pb-0.5 ${
+                    filters.type === type
+                      ? "text-foreground border-b-2 border-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {type === "all" ? "All" : `${type}s`}
+                </button>
+              ))}
+            </nav>
 
             {/* ── Desktop: Right Actions ─────────────────────────────────── */}
             <div className="hidden md:flex items-center gap-3">
@@ -229,10 +212,8 @@ export default function TopNavMobile() {
         </div>
       </header>
 
-      {/* ── Filter — Sheet on mobile, Dialog on tablet/desktop ───────────────── */}
-
-      {/* Mobile sheet */}
-      <div className="md:hidden">
+      {/* ── Filter Modal ──────────────────────────────────────────────────────── */}
+      {isMobile ? (
         <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
           <SheetContent
             side="bottom"
@@ -247,12 +228,9 @@ export default function TopNavMobile() {
             <FilterContent onApply={handleApply} />
           </SheetContent>
         </Sheet>
-      </div>
-
-      {/* Tablet and desktop dialog */}
-      <div className="hidden md:block">
+      ) : (
         <Dialog open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
-          <DialogContent className="max-w-md rounded-2xl px-6 pb-8 pt-6">
+          <DialogContent className="max-w-lg w-full rounded-2xl px-8 pb-8 pt-6">
             <DialogHeader className="mb-5 pb-4 border-b border-border">
               <DialogTitle className="text-base font-semibold text-foreground">
                 Filter listings
@@ -261,7 +239,7 @@ export default function TopNavMobile() {
             <FilterContent onApply={handleApply} />
           </DialogContent>
         </Dialog>
-      </div>
+      )}
     </>
   );
 }
