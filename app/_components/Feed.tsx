@@ -52,13 +52,13 @@ function DetailContent({
         </span>
       </div>
 
-      {/* Title + Price */}
+      {/* Title + Price — min-w-0 prevents overflow */}
       <div className="flex items-start justify-between gap-4 mb-2">
-        <h2 className="text-foreground font-bold text-xl leading-tight flex-1">
+        <h2 className="text-foreground font-bold text-xl leading-tight flex-1 min-w-0">
           {listing.title}
         </h2>
-        <div className="text-right shrink-0">
-          <p className="text-foreground font-bold text-lg">
+        <div className="text-right shrink-0 ml-2">
+          <p className="text-foreground font-bold text-base">
             UGX {listing.price.toLocaleString()}
           </p>
           <p className="text-muted-foreground text-xs">/month</p>
@@ -211,17 +211,17 @@ export default function Feed() {
     <>
       {/* ── Full Screen Feed ──────────────────────────────────────────────── */}
       <div
-        className="relative w-full flex-1 bg-black select-none cursor-grab active:cursor-grabbing"
+        className="relative w-full flex-1 bg-background select-none cursor-grab active:cursor-grabbing"
         style={{ height: "calc(100vh - 56px)" }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
       >
-        {/* ── Current listing — slightly scaled with gap at bottom ────────── */}
+        {/* ── Current listing — leaves gap at bottom ────────────────────── */}
         <div
-          className="absolute inset-x-0 top-0 overflow-hidden transition-all duration-300"
-          style={{ bottom: "48px", borderRadius: "0 0 20px 20px" }}
+          className="absolute inset-x-0 top-0 overflow-hidden"
+          style={{ bottom: "52px", borderRadius: "0 0 24px 24px" }}
         >
           {/* Background Photo */}
           {photo ? (
@@ -255,8 +255,22 @@ export default function Feed() {
             ))}
           </div>
 
+          {/* Photo Dots — floating inside listing above gap */}
+          {listing.photos.length > 1 && (
+            <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-10 flex gap-1.5">
+              {listing.photos.map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    i === currentPhoto ? "w-6 bg-white" : "w-1.5 bg-white/40"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+
           {/* Bottom Content Overlay */}
-          <div className="absolute bottom-10 left-4 right-20 z-10">
+          <div className="absolute bottom-20 left-4 right-20 z-10">
             {/* Type Badge */}
             <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border mb-3 ${styles.bg} ${styles.border}`}>
               <div className={`w-1.5 h-1.5 rounded-full ${styles.dot}`} />
@@ -286,7 +300,7 @@ export default function Feed() {
           </div>
 
           {/* Right Side Floating Actions */}
-          <div className="absolute right-3 bottom-10 z-10 flex flex-col gap-3">
+          <div className="absolute right-3 bottom-20 z-10 flex flex-col gap-3">
             <button className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95">
               <Heart size={18} className="text-white" />
             </button>
@@ -310,38 +324,26 @@ export default function Feed() {
           </div>
         </div>
 
-        {/* ── Gap strip — peek of next listing ─────────────────────────────── */}
+        {/* ── Gap strip — next listing peek ─────────────────────────────── */}
         <div
-          className="absolute inset-x-0 bottom-0 flex items-center justify-between px-4"
-          style={{ height: "48px" }}
+          className="absolute inset-x-0 bottom-0 flex items-center px-4"
+          style={{ height: "52px" }}
         >
-          {/* Photo dots — bottom center above nav */}
-          {listing.photos.length > 1 && (
-            <div className="absolute left-1/2 -translate-x-1/2 flex gap-1.5">
-              {listing.photos.map((_, i) => (
-                <div
-                  key={i}
-                  className={`h-1 rounded-full transition-all duration-300 ${
-                    i === currentPhoto ? "w-5 bg-foreground" : "w-1.5 bg-foreground/30"
-                  }`}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Next listing peek info */}
           {filteredListings[currentIndex + 1] && (
-            <div className="absolute right-4 flex items-center gap-1.5">
-              <span className="text-muted-foreground text-xs font-medium">
+            <div className="flex items-center gap-2 w-full">
+              <span className="text-muted-foreground text-xs">↑</span>
+              <span className="text-muted-foreground text-xs font-medium truncate">
                 Next: {filteredListings[currentIndex + 1].title}
               </span>
-              <span className="text-muted-foreground text-xs">↑</span>
+              <span className="text-muted-foreground text-xs ml-auto">
+                UGX {filteredListings[currentIndex + 1].price.toLocaleString()}
+              </span>
             </div>
           )}
         </div>
       </div>
 
-      {/* ── Detail Modal ──────────────────────────────────────────────────────── */}
+      {/* ── Detail Modal ──────────────────────────────────────────────────── */}
       {isMobile ? (
         <Sheet open={detailOpen} onOpenChange={setDetailOpen}>
           <SheetContent
@@ -359,7 +361,7 @@ export default function Feed() {
         </Sheet>
       ) : (
         <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-          <DialogContent className="max-w-2xl w-full rounded-2xl px-8 pb-8 pt-6 max-h-[85vh] overflow-y-auto">
+          <DialogContent className="w-[480px] max-w-[90vw] rounded-2xl px-6 pb-8 pt-2 max-h-[80vh] overflow-y-auto">
             <DetailContent
               listing={listing}
               currentPhoto={currentPhoto}
