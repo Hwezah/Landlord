@@ -192,7 +192,7 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
           placeholder="e.g. 450000"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary py-5"
+          className="h-auto rounded-xl bg-muted border-transparent py-5 focus:border-border focus-visible:ring-primary"
         />
       </div>
 
@@ -203,7 +203,7 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
           placeholder="e.g. Ntinda, Kampala"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary py-5"
+          className="h-auto rounded-xl bg-muted border-transparent py-5 focus:border-border focus-visible:ring-primary"
         />
       </div>
 

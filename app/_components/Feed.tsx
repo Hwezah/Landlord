@@ -313,8 +313,8 @@ export default function Feed() {
       >
         {/* ── Listing container ─────────────────────────────────────────── */}
         <div
-          className="absolute inset-x-0 top-0 overflow-hidden"
-          style={{ bottom: "52px", borderRadius: "0 0 24px 24px" }}
+          className="absolute inset-x-0 top-0 overflow-hidden rounded-b-xl"
+          style={{ bottom: "52px" }}
         >
           {/* Background Photo */}
           {photo ? (
@@ -340,33 +340,6 @@ export default function Feed() {
 
           {/* Tabs — overlaid on photo when a listing exists */}
           <FeedTabs activeTab={activeTab} setActiveTab={setActiveTab} overlay={true} />
-
-          {/* Listing Progress — left side */}
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-1.5">
-            {filteredListings.map((_, i) => (
-              <div
-                key={i}
-                onClick={() => setCurrentIndex(i)}
-                className={`w-1 rounded-full cursor-pointer transition-all duration-300 ${
-                  i === currentIndex ? "h-6 bg-white" : "h-2 bg-white/30 hover:bg-white/50"
-                }`}
-              />
-            ))}
-          </div>
-
-          {/* Photo Dots */}
-          {listing.photos.length > 1 && (
-            <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-10 flex gap-1.5">
-              {listing.photos.map((_, i) => (
-                <div
-                  key={i}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    i === currentPhoto ? "w-6 bg-white" : "w-1.5 bg-white/40"
-                  }`}
-                />
-              ))}
-            </div>
-          )}
 
           {/* Bottom Content Overlay */}
           <div className="absolute bottom-20 left-4 right-20 z-10">
@@ -398,8 +371,28 @@ export default function Feed() {
             </div>
           </div>
 
+          {/* Photo dots — tap to change image within this listing */}
+          {listing.photos.length > 1 && (
+            <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-20 flex gap-1.5 pointer-events-auto">
+              {listing.photos.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  aria-label={`Photo ${i + 1}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentPhoto(i);
+                  }}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    i === currentPhoto ? "w-6 bg-white" : "w-1.5 bg-white/40 hover:bg-white/60"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+
           {/* Right Side Floating Actions */}
-          <div className="absolute right-3 bottom-20 z-10 flex flex-col gap-3">
+          <div className="absolute right-3 bottom-20 z-10 flex flex-col gap-3 md:hidden">
             <button
               onClick={(e) => { e.stopPropagation(); toggleSave(listing.id); }}
               className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
@@ -434,11 +427,11 @@ export default function Feed() {
         <div className="absolute inset-x-0 bottom-0 flex items-center px-4" style={{ height: "52px" }}>
           {filteredListings[currentIndex + 1] && (
             <div className="flex items-center gap-2 w-full">
-              <span className="text-muted-foreground text-xs">↑</span>
-              <span className="text-muted-foreground text-xs font-medium truncate">
+              <span className="text-emerald-500 text-xs">↑</span>
+              <span className="text-emerald-500 text-xs font-medium truncate">
                 Next: {filteredListings[currentIndex + 1].title}
               </span>
-              <span className="text-muted-foreground text-xs ml-auto shrink-0">
+              <span className="text-emerald-500 text-xs ml-auto shrink-0">
                 UGX {filteredListings[currentIndex + 1].price.toLocaleString()}
               </span>
             </div>

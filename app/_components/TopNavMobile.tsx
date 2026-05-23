@@ -91,7 +91,7 @@ function FilterContent({ onApply }: { onApply: () => void }) {
           placeholder="e.g. Ntinda, Kisaasi, Kololo..."
           value={filters.location}
           onChange={(e) => setFilters({ ...filters, location: e.target.value })}
-          className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary"
+          className="h-auto rounded-xl bg-muted border-transparent py-2.5 text-sm focus:border-border focus-visible:ring-primary"
         />
       </div>
 

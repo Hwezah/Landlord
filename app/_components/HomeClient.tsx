@@ -7,9 +7,18 @@ import Feed from "@/app/_components/Feed";
 export default function HomeClient() {
   return (
     <div className="relative h-screen flex flex-col overflow-hidden">
-      <TopNavMobile />
+
+      {/* Desktop only */}
+      <div className="hidden md:block">
+        <TopNavMobile />
+      </div>
+
       <Feed />
-      <BottomNavMobile />
+
+      {/* Mobile only */}
+      <div className="md:hidden">
+        <BottomNavMobile />
+      </div>
     </div>
   );
 }
