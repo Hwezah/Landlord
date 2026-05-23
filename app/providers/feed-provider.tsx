@@ -62,8 +62,8 @@ type FeedContextValue = {
   savedIds: Set<string>;
   toggleSave: (listingId: string) => Promise<void>;
 
-  // Location (for distance badge in Feed)
-  userLocation: LatLng | null;
+  // Location (for distance badge in Feed) — always defined (Kampala fallback)
+  userLocation: LatLng;
 };
 
 // ── Defaults ─────────────────────────────────────────────────────────────────
