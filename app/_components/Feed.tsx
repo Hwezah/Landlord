@@ -289,9 +289,15 @@ export default function Feed() {
 
   const distanceBadge =
     activeTab === "nearby" &&
+    userLocation !== null &&
     listing.latitude !== null &&
     listing.longitude !== null
-      ? formatDistance(haversine(userLocation, { lat: listing.latitude!, lng: listing.longitude! }))
+      ? formatDistance(
+          haversine(userLocation, {
+            lat: listing.latitude,
+            lng: listing.longitude,
+          })
+        )
       : null;
 
   return (
