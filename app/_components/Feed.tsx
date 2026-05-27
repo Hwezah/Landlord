@@ -3,7 +3,7 @@
 import { useRef, useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { useFeed } from "@/app/providers/feed-provider";
-import { SlidersHorizontal, Info, Heart, MapPin, Navigation, Loader2, ChevronDown, ChevronUp, Flag, AlertTriangle } from "lucide-react";
+import { SlidersHorizontal, Info, Heart, MapPin, Navigation, Loader2, ChevronDown, ChevronUp, Flag, AlertTriangle, Phone } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -280,18 +280,20 @@ function DetailContent({
   onRented: () => void;
 }) {
   return (
-    <div className="px-1 space-y-4">
+    <div className="space-y-4">
       {/* Photo strip */}
       {listing.photos.length > 0 && (
         <div
-          className="flex gap-2 overflow-x-auto pb-1"
+          className="-mx-1 flex gap-2 overflow-x-auto px-2 py-2"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {listing.photos.map((p: string, i: number) => (
             <div
               key={i}
-              className={`relative h-20 w-28 shrink-0 rounded-xl overflow-hidden cursor-pointer transition-all ${
-                i === currentPhoto ? "ring-2 ring-primary" : "opacity-60"
+              className={`relative m-0.5 h-20 w-28 shrink-0 rounded-xl overflow-hidden cursor-pointer transition-all ${
+                i === currentPhoto
+                  ? "ring-2 ring-primary ring-offset-2 ring-offset-popover"
+                  : "opacity-60"
               }`}
               onClick={() => setCurrentPhoto(i)}
             >
@@ -309,13 +311,15 @@ function DetailContent({
             {listing.type}
           </span>
         </div>
-        <div className="flex items-start justify-between gap-3">
-          <h2 className="text-foreground font-bold text-lg leading-tight flex-1 min-w-0">
+        <div className="flex w-full flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+          <h2 className="w-fit max-w-full min-w-0 flex-auto break-words text-foreground font-bold text-lg leading-tight">
             {listing.title}
           </h2>
-          <div className="text-right shrink-0">
-            <p className="text-foreground font-bold text-base">UGX {listing.price.toLocaleString()}</p>
-            <p className="text-muted-foreground text-xs">/month</p>
+          <div className="flex shrink-0 items-baseline gap-1 whitespace-nowrap text-left">
+            <span className="text-foreground font-bold text-base">
+              UGX {listing.price.toLocaleString()}
+            </span>
+            <span className="text-muted-foreground text-xs">/month</span>
           </div>
         </div>
       </div>
@@ -372,10 +376,12 @@ function DetailContent({
 
       {/* Call Button */}
       <Button
-        className="w-full rounded-2xl py-5 text-sm font-bold gap-2"
+        variant="outline"
+        className="w-full rounded-2xl py-5 text-sm font-bold gap-2 text-foreground"
         onClick={() => window.open(`tel:${listing.phone_number}`)}
       >
-        📞 Call {listing.phone_number}
+        <Phone size={18} className="shrink-0" strokeWidth={2.5} />
+        Call {listing.phone_number}
       </Button>
 
       <OwnerSection listingId={listing.id} onRented={onRented} />
@@ -624,34 +630,29 @@ export default function Feed() {
           )}
 
           {/* Right Side Floating Actions */}
-          {/* Right Side Floating Actions */}
-<div className="absolute right-3 bottom-20 z-10 flex flex-col gap-3 md:hidden">
-  <button
-    onClick={() => setDetailOpen(true)}
-    className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
-  >
-    <Info size={18} className="text-white" />
-  </button>
-
-  <button
-    onClick={() => toggleSave(listing.id)}
-    className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
-  >
-    <Heart
-      size={18}
-      className={`transition-colors ${
-        isCurrentSaved
-          ? "fill-red-500 text-red-500"
-          : "text-white"
-      }`}
-    />
-  </button>
-
-  <button
-    onClick={() => setFilterSheetOpen(true)}
-    className="relative w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
-  >
-    <SlidersHorizontal size={18} className="text-white" />
+          <div className="absolute right-3 bottom-20 z-10 flex flex-col gap-3 md:hidden">
+            <button
+              onClick={() => toggleSave(listing.id)}
+              className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
+            >
+              <Heart
+                size={18}
+                className={`transition-colors ${
+                  isCurrentSaved ? "fill-red-500 text-red-500" : "text-white"
+                }`}
+              />
+            </button>
+            <button
+              onClick={() => setDetailOpen(true)}
+              className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
+            >
+              <Info size={18} className="text-white" />
+            </button>
+            <button
+              onClick={() => setFilterSheetOpen(true)}
+              className="relative w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
+            >
+              <SlidersHorizontal size={18} className="text-white" />
               {activeFilterCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">
                   {activeFilterCount}
@@ -680,8 +681,8 @@ export default function Feed() {
       {/* ── Detail Modal ────────────────────────────────────────────────── */}
       {isMobile ? (
         <Sheet open={detailOpen} onOpenChange={setDetailOpen}>
-          <SheetContent side="bottom" className="rounded-t-3xl max-h-[85vh] overflow-y-auto px-5 pb-10">
-            <div className="w-9 h-1 rounded-full bg-border mx-auto mb-5" />
+          <SheetContent side="bottom" className="rounded-t-3xl max-h-[85vh] overflow-y-auto px-5 pt-2 pb-10">
+            <div className="w-9 h-1 rounded-full bg-border mx-auto mb-5 mt-2" />
             <DetailContent
               listing={listing}
               currentPhoto={currentPhoto}
@@ -697,7 +698,7 @@ export default function Feed() {
             className="rounded-2xl overflow-hidden p-0"
             style={{ width: "560px", maxWidth: "90vw", maxHeight: "70vh", overflowX: "hidden" }}
           >
-            <div className="overflow-y-auto p-6" style={{ maxHeight: "70vh", scrollbarWidth: "none" }}>
+            <div className="overflow-y-auto p-6 pt-5" style={{ maxHeight: "70vh", scrollbarWidth: "none" }}>
               <DetailContent
                 listing={listing}
                 currentPhoto={currentPhoto}
