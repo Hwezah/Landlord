@@ -15,10 +15,8 @@ export default function HomeClient() {
 
       <Feed />
 
-      {/* Mobile only */}
-      <div className="md:hidden">
-        <BottomNavMobile />
-      </div>
+      {/* All devices */}
+      <BottomNavMobile />
     </div>
   );
 }
