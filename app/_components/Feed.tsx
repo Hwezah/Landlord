@@ -3,7 +3,7 @@
 import { useRef, useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { useFeed } from "@/app/providers/feed-provider";
-import { SlidersHorizontal, Info, MapPin, Navigation, Loader2, ChevronDown, ChevronUp, Flag, AlertTriangle } from "lucide-react";
+import { SlidersHorizontal, Info, Heart, MapPin, Navigation, Loader2, ChevronDown, ChevronUp, Flag, AlertTriangle } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -436,6 +436,7 @@ export default function Feed() {
     activeTab,
     setActiveTab,
     savedIds,
+    toggleSave,
     userLocation,
   } = useFeed();
 
@@ -623,18 +624,34 @@ export default function Feed() {
           )}
 
           {/* Right Side Floating Actions */}
-          <div className="absolute right-3 bottom-20 z-10 flex flex-col gap-3 md:hidden">
-            <button
-              onClick={() => setDetailOpen(true)}
-              className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
-            >
-              <Info size={18} className="text-white" />
-            </button>
-            <button
-              onClick={() => setFilterSheetOpen(true)}
-              className="relative w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
-            >
-              <SlidersHorizontal size={18} className="text-white" />
+          {/* Right Side Floating Actions */}
+<div className="absolute right-3 bottom-20 z-10 flex flex-col gap-3 md:hidden">
+  <button
+    onClick={() => setDetailOpen(true)}
+    className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
+  >
+    <Info size={18} className="text-white" />
+  </button>
+
+  <button
+    onClick={() => toggleSave(listing.id)}
+    className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
+  >
+    <Heart
+      size={18}
+      className={`transition-colors ${
+        isCurrentSaved
+          ? "fill-red-500 text-red-500"
+          : "text-white"
+      }`}
+    />
+  </button>
+
+  <button
+    onClick={() => setFilterSheetOpen(true)}
+    className="relative w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
+  >
+    <SlidersHorizontal size={18} className="text-white" />
               {activeFilterCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">
                   {activeFilterCount}
