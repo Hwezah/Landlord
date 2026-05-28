@@ -1,15 +1,17 @@
 "use client";
-
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Home, Search, Plus, Bookmark, User } from "lucide-react";
 import PostListingSheet from "@/app/_components/PostListingSheet";
-import { useFeed } from "@/app/providers/feed-provider";
+import { useFeedOptional } from "@/app/providers/feed-provider";
 
 export default function BottomNavMobile() {
-  const [activeNav, setActiveNav] = useState("home");
+  const router = useRouter();
+  const pathname = usePathname();
   const [postOpen, setPostOpen] = useState(false);
 
-  const { activeTab, setActiveTab } = useFeed();
+  const feed = useFeedOptional();
+  const activeTab = feed?.activeTab ?? "foryou";
 
   return (
     <>
@@ -31,23 +33,23 @@ export default function BottomNavMobile() {
                   return;
                 }
 
-                setActiveNav(id);
-
-                // ── Feed Tabs Integration ───────────────────────────────
                 if (id === "home") {
-                  setActiveTab("foryou");
-                }
-
-                if (id === "saved") {
-                  setActiveTab("saved");
+                  router.push("/");
+                  feed?.setActiveTab("foryou");
+                } else if (id === "search") {
+                  router.push("/search");
+                } else if (id === "saved") {
+                  router.push("/saved");
+                  feed?.setActiveTab("saved");
                 }
               }}
               className={`flex items-center justify-center transition-all active:scale-95 ${
                 primary
                   ? "w-12 h-10 rounded-full bg-primary text-primary-foreground mx-1"
                   : `w-10 h-10 rounded-full ${
-                      (id === "home" && activeTab === "foryou") ||
-                      (id === "saved" && activeTab === "saved")
+                      (id === "home" && pathname === "/" && activeTab === "foryou") ||
+                      (id === "search" && pathname === "/search") ||
+                      (id === "saved" && (pathname === "/saved" || activeTab === "saved"))
                         ? "bg-muted text-foreground"
                         : "text-muted-foreground hover:text-foreground"
                     }`

@@ -239,3 +239,7 @@ export function useFeed() {
   }
   return ctx;
 }
+
+export function useFeedOptional() {
+  return useContext(FeedContext);
+}
