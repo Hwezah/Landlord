@@ -357,17 +357,17 @@ function DetailContent({
         >
           <div className={`w-1.5 h-1.5 rounded-full ${styles.dot}`} />
           <span
-            className={`text-[11px] font-bold tracking-wide uppercase ${styles.text}`}
+            className={`text-[11px] font-medium tracking-wide uppercase ${styles.text}`}
           >
             {listing.type}
           </span>
         </div>
         <div className="flex w-full flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-          <h2 className="w-fit max-w-full min-w-0 flex-auto break-words text-foreground font-bold text-lg leading-tight">
+          <h2 className="w-fit max-w-full min-w-0 flex-auto break-words text-foreground font-medium text-lg leading-tight">
             {listing.title}
           </h2>
           <div className="flex shrink-0 items-baseline gap-1 whitespace-nowrap text-left">
-            <span className="text-foreground font-bold text-base">
+            <span className="text-sm text-muted-foreground font-normal">
               UGX {listing.price.toLocaleString()}
             </span>
             <span className="text-muted-foreground text-xs">/month</span>
@@ -456,6 +456,78 @@ function DetailContent({
   );
 }
 
+// Compact card used in horizontal rows (square image + compact info)
+function CompactCard({
+  listing,
+  index,
+  onSelect,
+  isSaved,
+  toggleSave,
+}: {
+  listing: Listing;
+  index: number;
+  onSelect: (i: number) => void;
+  isSaved: boolean;
+  toggleSave: (id: string) => Promise<void>;
+}) {
+  const photo = listing.photos[0];
+
+  return (
+    <div
+      onClick={() => onSelect(index)}
+      className="flex-shrink-0 w-44 sm:w-48 md:w-56"
+    >
+      <div className="relative overflow-hidden rounded-xl bg-slate-900 aspect-square">
+        {photo ? (
+          <Image
+            src={photo}
+            alt={listing.title}
+            fill
+            className="object-cover"
+            sizes="200px"
+            draggable={false}
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center bg-slate-950 text-4xl text-white/20">
+            🏠
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleSave(listing.id);
+          }}
+          className="absolute top-2 right-2 z-10 h-8 w-8 flex items-center justify-center text-white"
+          aria-label="Save listing"
+        >
+          <Heart
+            size={20}
+            strokeWidth={1.5}
+            className={
+              isSaved
+                ? "fill-emerald-500 text-emerald-500"
+                : "fill-slate-900/90 text-white"
+            }
+          />
+        </button>
+      </div>
+
+      <div className="mt-2">
+        <p className="text-[11px] uppercase tracking-wide text-muted-foreground line-clamp-1">
+          {listing.location_name}
+        </p>
+        <h4 className="text-sm font-semibold text-foreground mt-1 line-clamp-2">
+          {listing.title}
+        </h4>
+        <p className="text-xs text-muted-foreground font-normal mt-1">
+          UGX {listing.price.toLocaleString()}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function DesktopListingCard({
   listing,
   index,
@@ -516,11 +588,17 @@ function DesktopListingCard({
             event.stopPropagation();
             toggleSave(listing.id);
           }}
-          className="absolute top-4 right-4 z-10 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/90 text-foreground shadow-sm transition hover:bg-white"
+          className="absolute top-4 right-4 z-10 h-10 w-10 flex items-center justify-center text-white"
+          aria-label="Save listing"
         >
           <Heart
-            size={18}
-            className={isSaved ? "fill-red-500 text-red-500" : "text-slate-800"}
+            size={22}
+            strokeWidth={1.5}
+            className={
+              isSaved
+                ? "fill-emerald-500 text-emerald-500"
+                : "fill-slate-900/90 text-white"
+            }
           />
         </button>
 
@@ -537,13 +615,13 @@ function DesktopListingCard({
             <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
               {listing.location_name}
             </p>
-            <h3 className="mt-3 text-base font-semibold text-foreground line-clamp-2">
+            <h3 className="mt-3 text-base font-medium text-foreground line-clamp-2">
               {listing.title}
             </h3>
           </div>
 
           <div className="text-right">
-            <p className="text-lg font-extrabold text-foreground">
+            <p className="text-sm text-muted-foreground font-normal">
               UGX {listing.price.toLocaleString()}
             </p>
             <p className="text-sm text-muted-foreground">/month</p>
@@ -556,7 +634,7 @@ function DesktopListingCard({
 
         <div className="grid grid-cols-3 gap-2 text-center">
           <div className="rounded-3xl bg-muted px-3 py-3">
-            <p className="text-sm font-semibold text-foreground">
+            <p className="text-sm font-medium text-foreground">
               {listing.rooms ?? "—"}
             </p>
             <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
@@ -830,36 +908,45 @@ export default function Feed() {
               </div>
             </div>
 
-            <div className="mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-              {filteredListings.map((item, index) => {
-                const itemStyles = typeStyles[item.type];
-                const itemDistance =
-                  activeTab === "nearby" &&
-                  userLocation !== null &&
-                  item.latitude !== null &&
-                  item.longitude !== null
-                    ? formatDistance(
-                        haversine(userLocation, {
-                          lat: item.latitude,
-                          lng: item.longitude,
-                        }),
-                      )
-                    : null;
+            <div className="mt-8 space-y-8">
+              {(["house", "office", "shop"] as const).map((t) => {
+                const items = filteredListings.filter((l) => l.type === t);
+                if (items.length === 0) return null;
+                const title =
+                  t === "house"
+                    ? "Available Houses"
+                    : t === "office"
+                      ? "Available Offices"
+                      : "Available Shops";
                 return (
-                  <DesktopListingCard
-                    key={item.id}
-                    listing={item}
-                    index={index}
-                    selected={index === currentIndex}
-                    styles={itemStyles}
-                    isSaved={savedIds.has(item.id)}
-                    distanceBadge={itemDistance}
-                    onSelect={(selectedIndex) => {
-                      setCurrentIndex(selectedIndex);
-                      setDetailOpen(true);
-                    }}
-                    toggleSave={toggleSave}
-                  />
+                  <section key={t} className="px-2">
+                    <h3 className="mb-3 text-sm font-semibold text-foreground px-2">
+                      {title}
+                    </h3>
+                    <div
+                      className="-mx-2 flex gap-3 overflow-x-auto px-2 pb-4"
+                      style={{ scrollbarWidth: "none" }}
+                    >
+                      {items.map((item) => {
+                        const globalIndex = filteredListings.findIndex(
+                          (f) => f.id === item.id,
+                        );
+                        return (
+                          <CompactCard
+                            key={item.id}
+                            listing={item}
+                            index={globalIndex}
+                            onSelect={(i) => {
+                              setCurrentIndex(i);
+                              setDetailOpen(true);
+                            }}
+                            isSaved={savedIds.has(item.id)}
+                            toggleSave={toggleSave}
+                          />
+                        );
+                      })}
+                    </div>
+                  </section>
                 );
               })}
             </div>
@@ -972,7 +1059,7 @@ export default function Feed() {
                 </div>
               )}
             </div>
-            <h2 className="text-white font-bold text-2xl leading-tight mb-1.5 drop-shadow-lg">
+            <h2 className="text-white font-medium text-2xl leading-tight mb-1.5 drop-shadow-lg">
               {listing.title}
             </h2>
             <div className="flex items-center gap-1.5 mb-2">
@@ -986,7 +1073,7 @@ export default function Feed() {
               </span>
             </div>
             <div className="flex items-baseline gap-1">
-              <span className="text-white font-bold text-xl">
+              <span className="text-white text-lg font-medium">
                 UGX {listing.price.toLocaleString()}
               </span>
               <span className="text-white/50 text-sm">/mo</span>
@@ -1022,9 +1109,12 @@ export default function Feed() {
               className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
             >
               <Heart
-                size={18}
+                size={20}
+                strokeWidth={1.5}
                 className={`transition-colors ${
-                  isCurrentSaved ? "fill-red-500 text-red-500" : "text-white"
+                  isCurrentSaved
+                    ? "fill-emerald-500 text-emerald-500"
+                    : "fill-slate-900/90 text-white"
                 }`}
               />
             </button>
@@ -1059,7 +1149,7 @@ export default function Feed() {
               <span className="text-emerald-500 text-xs font-medium truncate">
                 Next: {filteredListings[currentIndex + 1].title}
               </span>
-              <span className="text-emerald-500 text-xs ml-auto shrink-0">
+              <span className="text-emerald-500 text-xs ml-auto shrink-0 font-normal">
                 UGX {filteredListings[currentIndex + 1].price.toLocaleString()}
               </span>
             </div>
