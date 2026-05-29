@@ -154,8 +154,13 @@ export default function TopNavMobile() {
                 <button
                   key={type}
                   onClick={() => {
-                    setFilters({ ...filters, type });
-                    applyFilters();
+                    const nextFilters = {
+                      ...filters,
+                      type,
+                    };
+                  
+                    setFilters(nextFilters);
+                    applyFilters(nextFilters);
                   }}
                   className={`text-sm font-medium capitalize transition-colors pb-0.5 ${
                     filters.type === type

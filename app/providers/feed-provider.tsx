@@ -46,7 +46,7 @@ type FeedContextValue = {
   filters: FilterState;
   setFilters: (filters: FilterState) => void;
   appliedFilters: FilterState;
-  applyFilters: () => void;
+  applyFilters: (nextFilters?: FilterState) => void;
   resetFilters: () => void;
   activeFilterCount: number;
 
@@ -124,11 +124,14 @@ export function FeedProvider({
     permissionStatus === "granted" && location ? location : KAMPALA;
 
   // ── Apply filters ──────────────────────────────────────────────────────────
-  const applyFilters = useCallback(() => {
-    setAppliedFilters(filters);
-    setCurrentIndex(0);
-    setCurrentPhoto(0);
-  }, [filters]);
+  const applyFilters = useCallback(
+    (nextFilters?: FilterState) => {
+      setAppliedFilters(nextFilters ?? filters);
+      setCurrentIndex(0);
+      setCurrentPhoto(0);
+    },
+    [filters],
+  );
 
   // ── Reset filters ──────────────────────────────────────────────────────────
   const resetFilters = useCallback(() => {
