@@ -435,7 +435,7 @@ function DetailContent({
       )}
 
       {/* Disclaimer */}
-      <div className="bg-amber-500/10 rounded-xl p-3 flex gap-2.5">
+      <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 flex gap-2.5">
         <span className="text-base shrink-0">⚠️</span>
         <p className="text-amber-600 dark:text-amber-400 text-xs leading-relaxed">
           Always visit this space in person before making any payments to

@@ -565,7 +565,7 @@ export default function ListingPageClient({ listing }: { listing: Listing }) {
           <div className="border-b border-border" />
 
           {/* Safety disclaimer — tint bg, no border */}
-          <div className="bg-amber-500/8 rounded-2xl p-4 flex gap-3">
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex gap-3">
             <span className="text-base shrink-0">⚠️</span>
             <p className="text-amber-600 dark:text-amber-400 text-sm leading-relaxed">
               Always visit this space in person before making any payments to anyone.
