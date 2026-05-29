@@ -15,15 +15,14 @@ export default function BottomNavMobile() {
 
   return (
     <>
-      {/* Raised up like Pinterest — bottom-8 */}
       <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
         <div className="flex items-center gap-1 bg-background/90 backdrop-blur-xl border border-border rounded-full px-3 py-2 shadow-lg">
           {[
-            { id: "home", icon: Home },
-            { id: "search", icon: Search },
-            { id: "post", icon: Plus, primary: true },
-            { id: "saved", icon: Bookmark },
-            { id: "account", icon: User },
+            { id: "home",    icon: Home     },
+            { id: "search",  icon: Search   },
+            { id: "post",    icon: Plus, primary: true },
+            { id: "saved",   icon: Bookmark },
+            { id: "account", icon: User     },
           ].map(({ id, icon: Icon, primary }) => (
             <button
               key={id}
@@ -36,20 +35,29 @@ export default function BottomNavMobile() {
                 if (id === "home") {
                   router.push("/");
                   feed?.setActiveTab("foryou");
-                } else if (id === "search") {
+                  return;
+                }
+
+                if (id === "search") {
                   router.push("/search");
-                } else if (id === "saved") {
-                  router.push("/saved");
+                  return;
+                }
+
+                if (id === "saved") {
+                  // Never navigate to /saved — just switch the feed tab
+                  // and go back to home if we're on another page
                   feed?.setActiveTab("saved");
+                  if (pathname !== "/") router.push("/");
+                  return;
                 }
               }}
               className={`flex items-center justify-center transition-all active:scale-95 ${
                 primary
                   ? "w-12 h-10 rounded-full bg-primary text-primary-foreground mx-1"
                   : `w-10 h-10 rounded-full ${
-                      (id === "home" && pathname === "/" && activeTab === "foryou") ||
+                      (id === "home"   && pathname === "/" && activeTab === "foryou") ||
                       (id === "search" && pathname === "/search") ||
-                      (id === "saved" && (pathname === "/saved" || activeTab === "saved"))
+                      (id === "saved"  && activeTab === "saved")
                         ? "bg-muted text-foreground"
                         : "text-muted-foreground hover:text-foreground"
                     }`
