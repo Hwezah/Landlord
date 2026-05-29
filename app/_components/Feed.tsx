@@ -1,3 +1,4 @@
+// app/_components/Feed.tsx
 "use client";
 
 import type { Listing } from "@/app/actions/listings";
@@ -21,6 +22,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const typeStyles = {
@@ -148,7 +150,7 @@ function ReportSection({ listingId }: { listingId: string }) {
       {expanded && (
         <div className="px-4 pb-4 space-y-3 border-t border-border pt-4">
           <p className="text-sm text-muted-foreground">
-            What's wrong with this listing?
+            What&apos;s wrong with this listing?
           </p>
           <div className="space-y-2">
             {REPORT_REASONS.map((r) => (
@@ -248,7 +250,7 @@ function OwnerSection({
             This is my listing
           </p>
           <p className="text-muted-foreground text-xs mt-0.5">
-            Mark it as rented once it's taken
+            Mark it as rented once it&apos;s taken
           </p>
         </div>
         {expanded ? (
@@ -307,6 +309,7 @@ function OwnerSection({
 }
 
 // ── Detail Content ─────────────────────────────────────────────────────────
+// Still used for the MOBILE sheet popup
 function DetailContent({
   listing,
   currentPhoto,
@@ -416,7 +419,7 @@ function DetailContent({
         </p>
       )}
 
-      {/* Flagged warning — shown inside detail if listing is flagged */}
+      {/* Flagged warning */}
       {listing.status === "flagged" && (
         <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 flex gap-2.5">
           <AlertTriangle
@@ -456,26 +459,24 @@ function DetailContent({
   );
 }
 
-// Compact card used in horizontal rows (square image + compact info)
+// ── Compact card — desktop horizontal scroll rows ──────────────────────────
+// Clicking navigates to the full listing page instead of opening a dialog.
 function CompactCard({
   listing,
-  index,
-  onSelect,
   isSaved,
   toggleSave,
 }: {
   listing: Listing;
-  index: number;
-  onSelect: (i: number) => void;
   isSaved: boolean;
   toggleSave: (id: string) => Promise<void>;
 }) {
+  const router = useRouter();
   const photo = listing.photos[0];
 
   return (
     <div
-      onClick={() => onSelect(index)}
-      className="flex-shrink-0 w-44 sm:w-48 md:w-56"
+      onClick={() => router.push(`/listing/${listing.id}`)}
+      className="flex-shrink-0 w-44 sm:w-48 md:w-56 cursor-pointer"
     >
       <div className="relative overflow-hidden rounded-xl bg-slate-900 aspect-square">
         {photo ? (
@@ -498,16 +499,16 @@ function CompactCard({
             e.stopPropagation();
             toggleSave(listing.id);
           }}
-          className="absolute top-2 right-2 z-10 h-8 w-8 flex items-center justify-center text-white"
+          className="absolute top-2 right-2 z-10 h-9 w-9 flex items-center justify-center text-white"
           aria-label="Save listing"
         >
           <Heart
-            size={20}
+            size={24}
             strokeWidth={1.5}
             className={
               isSaved
                 ? "fill-emerald-500 text-emerald-500"
-                : "fill-slate-900/90 text-white"
+                : "fill-black/40 text-white"
             }
           />
         </button>
@@ -523,141 +524,6 @@ function CompactCard({
         <p className="text-xs text-muted-foreground font-normal mt-1">
           UGX {listing.price.toLocaleString()}
         </p>
-      </div>
-    </div>
-  );
-}
-
-function DesktopListingCard({
-  listing,
-  index,
-  selected,
-  styles,
-  isSaved,
-  distanceBadge,
-  onSelect,
-  toggleSave,
-}: {
-  listing: Listing;
-  index: number;
-  selected: boolean;
-  styles: typeof typeStyles.house;
-  isSaved: boolean;
-  distanceBadge: string | null;
-  onSelect: (index: number) => void;
-  toggleSave: (listingId: string) => Promise<void>;
-}) {
-  const photo = listing.photos[0];
-
-  return (
-    <div
-      onClick={() => onSelect(index)}
-      className={`group cursor-pointer overflow-hidden rounded-[1.75rem] border bg-card shadow-sm transition duration-300 ${
-        selected
-          ? "border-primary ring-2 ring-primary/20 shadow-xl"
-          : "border-border hover:-translate-y-1 hover:shadow-2xl"
-      }`}
-    >
-      <div className="relative overflow-hidden bg-slate-900 aspect-[4/3]">
-        {photo ? (
-          <Image
-            src={photo}
-            alt={listing.title}
-            fill
-            className="object-cover transition duration-700 group-hover:scale-105"
-            sizes="(min-width: 1280px) 420px, (min-width: 768px) 50vw, 100vw"
-            priority={selected}
-            draggable={false}
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center bg-slate-950 text-6xl text-white/20">
-            🏠
-          </div>
-        )}
-
-        <div
-          className={`absolute top-4 left-4 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] ${styles.bg} ${styles.border}`}
-        >
-          <div className={`w-2 h-2 rounded-full ${styles.dot}`} />
-          <span className={`text-xs ${styles.text}`}>{listing.type}</span>
-        </div>
-
-        <button
-          type="button"
-          onClick={(event) => {
-            event.stopPropagation();
-            toggleSave(listing.id);
-          }}
-          className="absolute top-4 right-4 z-10 h-10 w-10 flex items-center justify-center text-white"
-          aria-label="Save listing"
-        >
-          <Heart
-            size={22}
-            strokeWidth={1.5}
-            className={
-              isSaved
-                ? "fill-emerald-500 text-emerald-500"
-                : "fill-slate-900/90 text-white"
-            }
-          />
-        </button>
-
-        {distanceBadge && (
-          <div className="absolute left-4 bottom-4 rounded-full bg-black/70 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-sm">
-            {distanceBadge}
-          </div>
-        )}
-      </div>
-
-      <div className="space-y-4 p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-              {listing.location_name}
-            </p>
-            <h3 className="mt-3 text-base font-medium text-foreground line-clamp-2">
-              {listing.title}
-            </h3>
-          </div>
-
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground font-normal">
-              UGX {listing.price.toLocaleString()}
-            </p>
-            <p className="text-sm text-muted-foreground">/month</p>
-          </div>
-        </div>
-
-        <p className="text-sm leading-6 text-muted-foreground line-clamp-2">
-          {listing.description}
-        </p>
-
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="rounded-3xl bg-muted px-3 py-3">
-            <p className="text-sm font-medium text-foreground">
-              {listing.rooms ?? "—"}
-            </p>
-            <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-              Rooms
-            </p>
-          </div>
-          <div className="rounded-3xl bg-muted px-3 py-3">
-            <p className="text-sm font-semibold text-foreground">
-              {listing.photos.length}
-            </p>
-            <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-              Photos
-            </p>
-          </div>
-          <div className="rounded-3xl bg-muted px-3 py-3">
-            <p className="text-sm font-semibold text-foreground capitalize">
-              {listing.type}
-            </p>
-            <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-              Type
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -735,6 +601,7 @@ export default function Feed() {
   } = useFeed();
 
   const isMobile = useIsMobile();
+  const router = useRouter();
 
   const touchStartY = useRef<number | null>(null);
   const touchStartX = useRef<number | null>(null);
@@ -884,9 +751,10 @@ export default function Feed() {
         )
       : null;
 
-  // Flagged listings show a warning triangle badge on the feed card
   const isFlagged = listing.status === "flagged";
 
+  // ── Desktop layout ──────────────────────────────────────────────────────
+  // Cards navigate to /listing/[id] — no more dialog on desktop
   if (!isMobile) {
     return (
       <div className="flex-1 overflow-y-auto pb-32 bg-background">
@@ -902,8 +770,7 @@ export default function Feed() {
                   />
                 </div>
                 <p className="mx-auto mt-3 max-w-2xl text-sm text-muted-foreground text-center xl:text-left">
-                  Browse listings in a responsive grid — click any property card
-                  to open the full details modal.
+                  Browse listings — click any card to open the full listing page.
                 </p>
               </div>
             </div>
@@ -927,58 +794,26 @@ export default function Feed() {
                       className="-mx-2 flex gap-3 overflow-x-auto px-2 pb-4"
                       style={{ scrollbarWidth: "none" }}
                     >
-                      {items.map((item) => {
-                        const globalIndex = filteredListings.findIndex(
-                          (f) => f.id === item.id,
-                        );
-                        return (
-                          <CompactCard
-                            key={item.id}
-                            listing={item}
-                            index={globalIndex}
-                            onSelect={(i) => {
-                              setCurrentIndex(i);
-                              setDetailOpen(true);
-                            }}
-                            isSaved={savedIds.has(item.id)}
-                            toggleSave={toggleSave}
-                          />
-                        );
-                      })}
+                      {items.map((item) => (
+                        <CompactCard
+                          key={item.id}
+                          listing={item}
+                          isSaved={savedIds.has(item.id)}
+                          toggleSave={toggleSave}
+                        />
+                      ))}
                     </div>
                   </section>
                 );
               })}
             </div>
-
-            <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-              <DialogContent
-                className="rounded-[2rem] overflow-hidden p-0 shadow-2xl ring-1 ring-black/10"
-                style={{ width: "min(880px, 95vw)", overflowX: "hidden" }}
-              >
-                <div
-                  className="overflow-y-auto bg-background p-6"
-                  style={{
-                    maxHeight: "calc(100vh - 5rem)",
-                    scrollbarWidth: "none",
-                  }}
-                >
-                  <DetailContent
-                    listing={listing}
-                    currentPhoto={currentPhoto}
-                    setCurrentPhoto={setCurrentPhoto}
-                    styles={styles}
-                    onRented={handleRented}
-                  />
-                </div>
-              </DialogContent>
-            </Dialog>
           </div>
         </div>
       </div>
     );
   }
 
+  // ── Mobile layout — TikTok feed with sheet detail modal ─────────────────
   return (
     <>
       <div
@@ -1019,7 +854,7 @@ export default function Feed() {
             overlay={true}
           />
 
-          {/* Flagged badge — top left corner of the photo */}
+          {/* Flagged badge */}
           {isFlagged && (
             <div className="absolute top-14 left-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/80 backdrop-blur-sm">
               <AlertTriangle
@@ -1109,12 +944,12 @@ export default function Feed() {
               className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
             >
               <Heart
-                size={20}
+                size={26}
                 strokeWidth={1.5}
                 className={`transition-colors ${
                   isCurrentSaved
                     ? "fill-emerald-500 text-emerald-500"
-                    : "fill-slate-900/90 text-white"
+                    : "fill-black/40 text-white"
                 }`}
               />
             </button>
@@ -1138,7 +973,7 @@ export default function Feed() {
           </div>
         </div>
 
-        {/* Gap strip */}
+        {/* Gap strip — shows next listing */}
         <div
           className="absolute inset-x-0 bottom-0 flex items-center px-4"
           style={{ height: "52px" }}
@@ -1157,7 +992,7 @@ export default function Feed() {
         </div>
       </div>
 
-      {/* ── Detail popup ────────────────────────────────────────────────── */}
+      {/* ── Mobile detail popup (Sheet → Dialog) ────────────────────────── */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogContent
           className="rounded-[2rem] overflow-hidden p-0 shadow-2xl ring-1 ring-black/10"
@@ -1168,7 +1003,7 @@ export default function Feed() {
           }}
         >
           <div
-            className="overflow-y-auto bg-background p-0"
+            className="overflow-y-auto bg-background p-5"
             style={{ maxHeight: "90vh", scrollbarWidth: "none" }}
           >
             <DetailContent

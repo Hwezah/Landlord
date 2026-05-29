@@ -1,7 +1,8 @@
+// app/actions/listings.ts
 "use server";
-
+ 
 import { createClient } from "@/lib/supabase/server";
-
+ 
 export type Listing = {
   id: string;
   type: "house" | "office" | "shop";
@@ -17,10 +18,10 @@ export type Listing = {
   status: string;
   created_at: string;
 };
-
+ 
 export async function getListings(): Promise<Listing[]> {
   const supabase = await createClient();
-
+ 
   const { data, error } = await supabase
     .from("listings")
     .select(
@@ -28,11 +29,33 @@ export async function getListings(): Promise<Listing[]> {
     )
     .eq("status", "available")
     .order("created_at", { ascending: false });
-
+ 
   if (error) {
-    console.error("Error fetching listings:", error.message);
+    console.error("getListings error:", error);
     return [];
   }
-
-  return data ?? [];
+ 
+  return (data as Listing[]) ?? [];
+}
+ 
+// Fetch a single listing by ID — used by the /listing/[id] detail page.
+// Unlike getListings, this does NOT filter by status=available,
+// so owners can still see their listing even after it's flagged/rented.
+export async function getListingById(id: string): Promise<Listing | null> {
+  const supabase = await createClient();
+ 
+  const { data, error } = await supabase
+    .from("listings")
+    .select(
+      "id, type, title, description, price, location_name, latitude, longitude, rooms, phone_number, photos, status, created_at"
+    )
+    .eq("id", id)
+    .single();
+ 
+  if (error) {
+    console.error("getListingById error:", error);
+    return null;
+  }
+ 
+  return data as Listing;
 }
