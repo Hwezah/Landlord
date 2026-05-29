@@ -620,12 +620,12 @@ export default function ListingPageClient({ listing }: { listing: Listing }) {
       {/* ── Sticky bottom bar on mobile ── */}
       <div className="fixed bottom-0 inset-x-0 z-20 lg:hidden border-t border-border bg-background/95 backdrop-blur-md px-4 py-3">
         <div className="flex items-center gap-3 max-w-lg mx-auto">
-          <div>
-            <p className="text-base font-semibold text-foreground leading-tight">
-              UGX {listing.price.toLocaleString()}
-            </p>
-            <p className="text-xs text-muted-foreground">/month</p>
-          </div>
+        <div className="flex items-baseline gap-1">
+  <p className="text-base font-semibold text-foreground leading-tight">
+    UGX {listing.price.toLocaleString()}
+  </p>
+  <p className="text-xs text-muted-foreground">/month</p>
+</div>
           <Button
             className="ml-auto rounded-xl px-6 py-5 text-sm font-bold gap-2"
             onClick={() => window.open(`tel:${listing.phone_number}`)}

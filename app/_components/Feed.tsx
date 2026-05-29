@@ -391,20 +391,20 @@ function DetailContent({
       {/* Stats */}
       <div className="flex gap-2">
         {listing.rooms && (
-          <div className="flex-1 bg-muted rounded-xl p-2.5 text-center">
+          <div className="flex-1 rounded-xl p-2.5 text-center">
             <p className="text-foreground font-bold text-sm">{listing.rooms}</p>
             <p className="text-muted-foreground text-[11px]">
               {listing.rooms === 1 ? "Room" : "Rooms"}
             </p>
           </div>
         )}
-        <div className="flex-1 bg-muted rounded-xl p-2.5 text-center">
+        <div className="flex-1 rounded-xl p-2.5 text-center">
           <p className="text-foreground font-bold text-sm">
             {listing.photos.length}
           </p>
           <p className="text-muted-foreground text-[11px]">Photos</p>
         </div>
-        <div className="flex-1 bg-muted rounded-xl p-2.5 text-center">
+        <div className="flex-1 rounded-xl p-2.5 text-center">
           <p className={`font-bold text-sm capitalize ${styles.text}`}>
             {listing.type}
           </p>
@@ -435,7 +435,7 @@ function DetailContent({
       )}
 
       {/* Disclaimer */}
-      <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 flex gap-2.5">
+      <div className="bg-amber-500/10 rounded-xl p-3 flex gap-2.5">
         <span className="text-base shrink-0">⚠️</span>
         <p className="text-amber-600 dark:text-amber-400 text-xs leading-relaxed">
           Always visit this space in person before making any payments to
@@ -445,8 +445,8 @@ function DetailContent({
 
       {/* Call Button */}
       <Button
-        variant="outline"
-        className="w-full rounded-2xl py-5 text-sm font-bold gap-2 text-foreground"
+        variant="ghost"
+        className="w-full rounded-2xl py-5 text-sm font-bold gap-2 text-foreground bg-muted/60 hover:bg-muted"
         onClick={() => window.open(`tel:${listing.phone_number}`)}
       >
         <Phone size={18} className="shrink-0" strokeWidth={2.5} />
@@ -894,7 +894,7 @@ export default function Feed() {
                 </div>
               )}
             </div>
-            <h2 className="text-white font-medium text-2xl leading-tight mb-1.5 drop-shadow-lg">
+            <h2 className="text-white font-medium text-lg leading-tight mb-1.5 drop-shadow-lg">
               {listing.title}
             </h2>
             <div className="flex items-center gap-1.5 mb-2">
@@ -908,7 +908,7 @@ export default function Feed() {
               </span>
             </div>
             <div className="flex items-baseline gap-1">
-              <span className="text-white text-lg font-medium">
+              <span className="text-white text-sm font-medium">
                 UGX {listing.price.toLocaleString()}
               </span>
               <span className="text-white/50 text-sm">/mo</span>
