@@ -1,11 +1,10 @@
 // app/_components/Feed.tsx
 "use client";
-
 import type { Listing } from "@/app/actions/listings";
 import { markAsRented, submitReport } from "@/app/actions/post-listing";
 import { useFeed } from "@/app/providers/feed-provider";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -317,7 +316,7 @@ function DetailContent({
   styles,
   onRented,
 }: {
-  listing: any;
+  listing: Listing;
   currentPhoto: number;
   setCurrentPhoto: (i: number) => void;
   styles: typeof typeStyles.house;
@@ -994,28 +993,29 @@ export default function Feed() {
 
       {/* ── Mobile detail popup (Sheet → Dialog) ────────────────────────── */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent
-          className="rounded-[2rem] overflow-hidden p-0 shadow-2xl ring-1 ring-black/10"
-          style={{
-            width: "min(780px, 95vw)",
-            maxHeight: "90vh",
-            overflowX: "hidden",
-          }}
-        >
-          <div
-            className="overflow-y-auto bg-background p-5"
-            style={{ maxHeight: "90vh", scrollbarWidth: "none" }}
-          >
-            <DetailContent
-              listing={listing}
-              currentPhoto={currentPhoto}
-              setCurrentPhoto={setCurrentPhoto}
-              styles={styles}
-              onRented={handleRented}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
+  <DialogContent
+    className="rounded-[2rem] overflow-hidden p-0 shadow-2xl ring-1 ring-black/10"
+    style={{
+      width: "min(780px, 95vw)",
+      maxHeight: "90vh",
+      overflowX: "hidden",
+    }}
+  >
+    <DialogTitle className="sr-only">{listing.title}</DialogTitle>
+    <div
+      className="overflow-y-auto bg-background p-5"
+      style={{ maxHeight: "90vh", scrollbarWidth: "none" }}
+    >
+      <DetailContent
+        listing={listing}
+        currentPhoto={currentPhoto}
+        setCurrentPhoto={setCurrentPhoto}
+        styles={styles}
+        onRented={handleRented}
+      />
+    </div>
+  </DialogContent>
+</Dialog>
     </>
   );
 }
