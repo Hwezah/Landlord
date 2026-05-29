@@ -108,8 +108,8 @@ export default function SearchClient() {
 
               {/* Section header */}
               <div className="px-4 mb-3 flex items-center gap-2">
-                <MapPin size={13} className="text-orange-400 shrink-0" strokeWidth={2.5} />
-                <h3 className="text-sm font-semibold text-foreground">
+                {/* <MapPin size={13} className="text-orange-400 shrink-0" strokeWidth={2.5} /> */}
+                <h3 className="text-sm md:text-[22px] font-semibold text-foreground">
                   Available in {location}
                 </h3>
                 <span className="ml-auto text-xs text-muted-foreground">

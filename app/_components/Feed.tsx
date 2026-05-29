@@ -786,7 +786,7 @@ export default function Feed() {
                       : "Available Shops";
                 return (
                   <section key={t} className="px-2">
-                    <h3 className="mb-3 text-sm font-semibold text-foreground px-2">
+                    <h3 className="mb-3 text-sm md:text-[22px] font-semibold text-foreground px-2">
                       {title}
                     </h3>
                     <div
@@ -916,7 +916,7 @@ export default function Feed() {
 
           {/* Photo dots */}
           {listing.photos.length > 1 && (
-            <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-20 flex gap-1.5 pointer-events-auto">
+            <div className="fixed bottom-36 left-1/2 -translate-x-1/2 z-50 flex gap-1.5 pointer-events-auto">
               {listing.photos.map((_, i) => (
                 <button
                   key={i}
