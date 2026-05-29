@@ -37,6 +37,32 @@ export async function getListings(): Promise<Listing[]> {
  
   return (data as Listing[]) ?? [];
 }
+
+// Returns every distinct location_name that currently has at least one
+// available listing — used to drive search suggestions and the location
+// parser instead of the hardcoded UGANDA_LOCATIONS array.
+export async function getDistinctLocations(): Promise<string[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("listings")
+    .select("location_name")
+    .eq("status", "available");
+
+  if (error) {
+    console.error("getDistinctLocations error:", error);
+    return [];
+  }
+
+  // Deduplicate in JS — Supabase's anon client doesn't expose
+  // a clean .distinct() so we just pull the column and dedupe.
+  const seen = new Set<string>();
+  for (const row of data ?? []) {
+    if (row.location_name) seen.add(row.location_name);
+  }
+
+  return [...seen].sort();
+}
  
 // Fetch a single listing by ID — used by the /listing/[id] detail page.
 // Unlike getListings, this does NOT filter by status=available,

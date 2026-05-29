@@ -1,32 +1,14 @@
 // lib/search/listings-search.ts
-
 import type { Listing } from "@/app/actions/listings";
 
-export const UGANDA_LOCATIONS = [
-  "Kampala", "Wakiso", "Mukono", "Entebbe", "Jinja", "Gulu", "Mbarara",
-  "Fort Portal", "Mbale", "Masaka", "Arua", "Lira", "Soroti", "Kabale",
-  "Hoima", "Moroto", "Kitgum", "Iganga", "Tororo", "Kasese", "Bushenyi",
-  "Kamuli", "Luwero", "Mityana", "Mpigi", "Gayaza", "Bombo", "Central Region",
-  "Eastern Region", "Northern Region", "Western Region", "Ntinda", "Najjera",
-  "Kisaasi", "Kololo", "Nakasero", "Bugolobi", "Muyenga", "Buziga", "Munyonyo",
-  "Lubowa", "Seguku", "Naalya", "Najjanankumbi", "Wandegeya", "Makerere",
-  "Kawempe", "Nansana", "Kira", "Bunga", "Kabalagala", "Namugongo",
-  "Bweyogerere", "Kireka", "Mutungo", "Luzira", "Port Bell", "Nateete",
-  "Rubaga", "Ndeeba", "Kansanga", "Makindye", "Bukoto", "Kamwokya",
-  "Kiwatule", "Kulambiro", "Bukasa", "Mpererwe", "Kyambogo", "Banda",
-  "Nakawa", "Industrial Area", "Old Kampala", "Kawanda", "Matugga", "Seeta",
-  "Mbalwa", "Sonde", "Ggaba", "Katabi", "Abaita", "Namanve", "Mbarara City",
-  "Ibanda", "Rukungiri", "Kanungu", "Pakwach", "Nebbi", "Adjumani", "Koboko",
-  "Yumbe", "Moyo", "Kotido", "Kaabong", "Abim", "Pallisa", "Budaka", "Kumi",
-  "Sironko", "Kapchorwa", "Bukedea", "Bugiri", "Mayuge", "Busia", "Manafwa",
-  "Bududa", "Kyanja",
-] as const;
-
+// POPULAR_SEARCHES are hardcoded because they describe *intent* (room types,
+// price bands, property categories) not place names. Place name suggestions
+// come from the DB via getDistinctLocations() instead.
 export const POPULAR_SEARCHES = [
-  "Ntinda", "Najjera", "Kololo", "Entebbe", "Jinja", "Wakiso", "Kyanja",
-  "Kisaasi", "Single room", "Double room", "Self contained", "Bedsitter",
-  "Under 300k", "300k - 700k", "Over 1M", "Office", "Shop", "Airbnb",
-  "2 bedroom", "Mbarara", "Gulu",
+  "Single room", "Double room", "Self contained", "Bedsitter",
+  "Under 300k", "300k - 700k", "Over 1M",
+  "Office", "Shop", "Airbnb",
+  "2 bedroom", "Ntinda", "Najjera", "Kololo", "Entebbe",
 ] as const;
 
 type PropertyFilter = Listing["type"] | "airbnb";
@@ -91,10 +73,6 @@ const NORMALIZED_TYPE_ALIASES = (
   )
   .sort((a, b) => b.norm.length - a.norm.length);
 
-const NORMALIZED_LOCATIONS = [...UGANDA_LOCATIONS]
-  .map((location) => ({ location, norm: normalize(location) }))
-  .sort((a, b) => b.norm.length - a.norm.length);
-
 const NORMALIZED_AIRBNB_ALIASES = TYPE_ALIASES.airbnb.map(normalize);
 
 function levenshtein(a: string, b: string): number {
@@ -115,12 +93,6 @@ function levenshtein(a: string, b: string): number {
   return row[b.length];
 }
 
-function maxEditDistance(token: string): number {
-  if (token.length <= 4) return 0;
-  if (token.length <= 6) return 1;
-  return 2;
-}
-
 function fuzzyMatchNormalized(hay: string, needle: string): boolean {
   if (!needle) return true;
   if (hay.includes(needle)) return true;
@@ -129,11 +101,12 @@ function fuzzyMatchNormalized(hay: string, needle: string): boolean {
   return hay.split(" ").some((token) => {
     if (token === needle || token.includes(needle) || needle.includes(token))
       return true;
-    return levenshtein(token, needle) <= maxEditDistance(needle);
+    const maxDist = token.length <= 4 ? 0 : token.length <= 6 ? 1 : 2;
+    return levenshtein(token, needle) <= maxDist;
   });
 }
 
-// ─── Price parsing ────────────────────────────────────────────────────────────
+// ── Price parsing ──────────────────────────────────────────────────────────────
 function parseAmount(raw: string, suffix?: string): number {
   let n = parseFloat(raw);
   if (Number.isNaN(n)) return 0;
@@ -184,7 +157,7 @@ function parsePriceFilters(query: string): {
   return { minPrice, maxPrice, rest: normalize(rest) };
 }
 
-// ─── Room parsing ─────────────────────────────────────────────────────────────
+// ── Room parsing ───────────────────────────────────────────────────────────────
 function parseRoomFilters(query: string): {
   minRooms?: number;
   maxRooms?: number;
@@ -224,7 +197,7 @@ function parseRoomFilters(query: string): {
   return { minRooms, maxRooms, roomPhrases, rest: normalize(rest) };
 }
 
-// ─── Type detection ───────────────────────────────────────────────────────────
+// ── Type detection ─────────────────────────────────────────────────────────────
 function detectTypes(query: string): { types: PropertyFilter[]; rest: string } {
   let rest = query;
   const types = new Set<PropertyFilter>();
@@ -237,32 +210,39 @@ function detectTypes(query: string): { types: PropertyFilter[]; rest: string } {
   return { types: [...types], rest: normalize(rest) };
 }
 
-// ─── Location detection ───────────────────────────────────────────────────────
-// Pass 1: exact substring only.
-// Pass 2: typo correction on tokens longer than 4 chars, only against
-//         location names longer than 4 chars, with a tighter edit distance.
-function detectLocations(query: string): { locations: string[]; rest: string } {
+// ── Location detection — driven by DB locations, not a hardcoded list ──────────
+// knownLocations comes from getDistinctLocations() in listings.ts.
+// The shape is identical to what UGANDA_LOCATIONS used to provide, so all
+// the fuzzy/typo logic below works exactly the same way.
+function detectLocations(
+  query: string,
+  knownLocations: string[],
+): { locations: string[]; rest: string } {
+  // Pre-normalise once so we're not repeating work in the loop
+  const normalised = knownLocations.map((loc) => ({
+    location: loc,
+    norm: normalize(loc),
+  })).sort((a, b) => b.norm.length - a.norm.length); // longest first — greedy match
+
   let rest = query;
   const locations: string[] = [];
 
-  // Pass 1 — exact match
-  for (const { location, norm } of NORMALIZED_LOCATIONS) {
+  // Pass 1 — exact substring match
+  for (const { location, norm } of normalised) {
     if (rest.includes(norm)) {
       locations.push(location);
       rest = rest.replace(norm, " ").replace(/\s+/g, " ").trim();
     }
   }
 
-  // Pass 2 — typo correction (only if nothing found yet)
-  // Skipped when we already have a location to prevent cross-matching
+  // Pass 2 — typo correction (only when nothing matched in pass 1)
   if (locations.length === 0) {
     for (const token of rest.split(" ").filter((t) => t.length > 4)) {
       const corrected = normalize(TYPO_MAP[token] ?? token);
-      for (const { location, norm } of NORMALIZED_LOCATIONS) {
+      for (const { location, norm } of normalised) {
         if (
           !locations.includes(location) &&
           norm.length > 4 &&
-          // Tighter: only allow 1 edit regardless of length
           levenshtein(corrected, norm) <= 1
         ) {
           locations.push(location);
@@ -274,13 +254,17 @@ function detectLocations(query: string): { locations: string[]; rest: string } {
   return { locations, rest: normalize(rest) };
 }
 
-// ─── Main parser ──────────────────────────────────────────────────────────────
-export function parseSearchQuery(raw: string): ParsedQuery {
+// ── Main parser ────────────────────────────────────────────────────────────────
+// knownLocations is passed in from the DB so the parser stays pure/testable.
+export function parseSearchQuery(
+  raw: string,
+  knownLocations: string[] = [],
+): ParsedQuery {
   const normalized = normalize(raw);
   const price = parsePriceFilters(normalized);
   const rooms = parseRoomFilters(price.rest);
   const types = detectTypes(rooms.rest);
-  const locations = detectLocations(types.rest);
+  const locations = detectLocations(types.rest, knownLocations);
 
   return {
     text: locations.rest,
@@ -294,8 +278,7 @@ export function parseSearchQuery(raw: string): ParsedQuery {
   };
 }
 
-// ─── Listing matching ─────────────────────────────────────────────────────────
-
+// ── Listing matching ───────────────────────────────────────────────────────────
 function listingBlob(listing: Listing): string {
   return normalize(
     [
@@ -345,17 +328,12 @@ function matchesRooms(
   return true;
 }
 
-// FIX: location matching now ONLY checks location_name, never the full blob.
-// Checking the blob caused listings in nearby areas to bleed through because
-// their titles/descriptions happened to contain words that fuzzy-matched the
-// searched location name.
 function matchesLocations(
   locationNorm: string,
   normalizedLocations: string[]
 ): boolean {
   if (normalizedLocations.length === 0) return true;
   return normalizedLocations.some((loc) =>
-    // Exact substring first (fast path), then fuzzy for typos
     locationNorm.includes(loc) || fuzzyMatchNormalized(locationNorm, loc)
   );
 }
@@ -379,12 +357,17 @@ function matchesFreeText(blob: string, parsed: ParsedQuery, rawNorm: string): bo
   return tokens.every((token) => fuzzyMatchNormalized(blob, token));
 }
 
-// ─── Public API ───────────────────────────────────────────────────────────────
-export function filterListings(listings: Listing[], rawQuery: string): Listing[] {
+// ── Public API ─────────────────────────────────────────────────────────────────
+// knownLocations should be passed from getDistinctLocations() — the DB-driven list.
+export function filterListings(
+  listings: Listing[],
+  rawQuery: string,
+  knownLocations: string[] = [],
+): Listing[] {
   const trimmed = rawQuery.trim();
   if (!trimmed) return [];
 
-  const parsed = parseSearchQuery(trimmed);
+  const parsed = parseSearchQuery(trimmed, knownLocations);
   const rawNorm = normalize(trimmed);
   const normalizedLocations = parsed.locations.map(normalize);
   const normalizedRoomPhrases = parsed.roomPhrases.map(normalize);
@@ -394,7 +377,6 @@ export function filterListings(listings: Listing[], rawQuery: string): Listing[]
     const blob = listingBlob(listing);
     if (!matchesRooms(listing, parsed, blob, normalizedRoomPhrases)) return false;
     if (!matchesTypes(listing, parsed)) return false;
-    // Pass only location_name — no more blob leaking
     if (!matchesLocations(normalize(listing.location_name), normalizedLocations)) return false;
     if (!matchesAirbnbIntent(blob, parsed)) return false;
     if (!matchesFreeText(blob, parsed, rawNorm)) return false;
@@ -402,21 +384,16 @@ export function filterListings(listings: Listing[], rawQuery: string): Listing[]
   });
 }
 
-// ─── Grouped results for the UI ───────────────────────────────────────────────
-// Returns listings bucketed by location_name so SearchClient can render
-// "Available in Najjera", "Available in Ntinda" rows cleanly.
+// ── Grouped results for the UI ─────────────────────────────────────────────────
 export function groupResultsByLocation(
   listings: Listing[]
 ): { location: string; items: Listing[] }[] {
   const map = new Map<string, Listing[]>();
-
   for (const listing of listings) {
     const key = listing.location_name;
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(listing);
   }
-
-  // Sort groups: largest first so the most relevant area leads
   return Array.from(map.entries())
     .map(([location, items]) => ({ location, items }))
     .sort((a, b) => b.items.length - a.items.length);

@@ -943,7 +943,7 @@ export default function Feed() {
               className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
             >
               <Heart
-                size={26}
+                size={20}
                 strokeWidth={1.5}
                 className={`transition-colors ${
                   isCurrentSaved

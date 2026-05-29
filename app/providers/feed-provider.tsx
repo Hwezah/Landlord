@@ -30,6 +30,9 @@ type FeedContextValue = {
   listings: Listing[];
   filteredListings: Listing[];
 
+  // DB-derived location names — passed to the search parser
+  locations: string[];
+
   // Active listing index for feed
   currentIndex: number;
   setCurrentIndex: (index: number) => void;
@@ -78,10 +81,8 @@ const defaultFilters: FilterState = {
 const KAMPALA: LatLng = { lat: 0.3476, lng: 32.5825 };
 
 // ── Haversine formula ─────────────────────────────────────────────────────────
-// Returns distance in kilometres between two lat/lng points.
-// This is the standard formula for great-circle distance on a sphere.
 function haversine(a: LatLng, b: LatLng): number {
-  const R = 6371; // Earth's radius in km
+  const R = 6371;
   const toRad = (deg: number) => (deg * Math.PI) / 180;
 
   const dLat = toRad(b.lat - a.lat);
@@ -104,9 +105,11 @@ const FeedContext = createContext<FeedContextValue | null>(null);
 export function FeedProvider({
   children,
   listings,
+  locations = [],  // distinct location_name values from the DB
 }: {
   children: ReactNode;
   listings: Listing[];
+  locations?: string[];
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentPhoto, setCurrentPhoto] = useState(0);
@@ -150,7 +153,6 @@ export function FeedProvider({
 
   // ── Build filtered + sorted listings ──────────────────────────────────────
   const filteredListings = useMemo(() => {
-    // Step 1: apply search/filter criteria
     let result = listings.filter((listing) => {
       if (appliedFilters.type !== "all" && listing.type !== appliedFilters.type) {
         return false;
@@ -171,23 +173,14 @@ export function FeedProvider({
       return true;
     });
 
-    // Step 2: tab-specific logic
     if (activeTab === "saved") {
-      // Only listings this session has saved
       result = result.filter((listing) => savedIds.has(listing.id));
     } else if (activeTab === "nearby") {
-      // Only listings that have coordinates, sorted nearest-first
       result = result
         .filter((l) => l.latitude !== null && l.longitude !== null)
         .sort((a, b) => {
-          const distA = haversine(userLocation, {
-            lat: a.latitude!,
-            lng: a.longitude!,
-          });
-          const distB = haversine(userLocation, {
-            lat: b.latitude!,
-            lng: b.longitude!,
-          });
+          const distA = haversine(userLocation, { lat: a.latitude!, lng: a.longitude! });
+          const distB = haversine(userLocation, { lat: b.latitude!, lng: b.longitude! });
           return distA - distB;
         });
     }
@@ -208,6 +201,7 @@ export function FeedProvider({
       value={{
         listings,
         filteredListings,
+        locations,
         currentIndex,
         setCurrentIndex,
         currentPhoto,
