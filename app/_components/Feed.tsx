@@ -769,7 +769,7 @@ export default function Feed() {
                     overlay={false}
                   />
                 </div>
-                <p className="mx-auto mt-3 max-w-2xl text-sm text-muted-foreground text-center xl:text-left">
+                <p className="mx-auto mt-3 max-w-2xl text-sm text-muted-foreground text-center">
                   Browse listings — click any card to open the full listing page.
                 </p>
               </div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal, Sun, Moon } from "lucide-react";
+import { useTheme } from "next-themes";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -128,6 +129,7 @@ export default function TopNavMobile() {
   } = useFeed();
 
   const isMobile = useIsMobile();
+  const { theme, setTheme } = useTheme(); // ← this was missing
 
   function handleApply() {
     applyFilters();
@@ -181,8 +183,19 @@ export default function TopNavMobile() {
                   </span>
                 )}
               </Button>
-              {/* <Button className="rounded-full">+ Post Listing</Button> */}
+
+              {/* Theme Toggle */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                aria-label="Toggle theme"
+              >
+                <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              </Button>
             </div>
+
           </div>
         </div>
       </header>

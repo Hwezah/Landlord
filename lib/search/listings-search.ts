@@ -1,139 +1,32 @@
+// lib/search/listings-search.ts
+
 import type { Listing } from "@/app/actions/listings";
 
-/** Kampala neighbourhoods, towns & regions users commonly search */
 export const UGANDA_LOCATIONS = [
-  "Kampala",
-  "Wakiso",
-  "Mukono",
-  "Entebbe",
-  "Jinja",
-  "Gulu",
-  "Mbarara",
-  "Fort Portal",
-  "Mbale",
-  "Masaka",
-  "Arua",
-  "Lira",
-  "Soroti",
-  "Kabale",
-  "Hoima",
-  "Moroto",
-  "Kitgum",
-  "Iganga",
-  "Tororo",
-  "Kasese",
-  "Bushenyi",
-  "Kamuli",
-  "Luwero",
-  "Mityana",
-  "Mpigi",
-  "Gayaza",
-  "Bombo",
-  "Central Region",
-  "Eastern Region",
-  "Northern Region",
-  "Western Region",
-  "Ntinda",
-  "Najjera",
-  "Kisaasi",
-  "Kololo",
-  "Nakasero",
-  "Bugolobi",
-  "Muyenga",
-  "Buziga",
-  "Munyonyo",
-  "Lubowa",
-  "Seguku",
-  "Naalya",
-  "Najjanankumbi",
-  "Wandegeya",
-  "Makerere",
-  "Kawempe",
-  "Nansana",
-  "Kira",
-  "Bunga",
-  "Kabalagala",
-  "Namugongo",
-  "Bweyogerere",
-  "Kireka",
-  "Mutungo",
-  "Luzira",
-  "Port Bell",
-  "Nateete",
-  "Rubaga",
-  "Ndeeba",
-  "Kansanga",
-  "Makindye",
-  "Bukoto",
-  "Kamwokya",
-  "Kiwatule",
-  "Kulambiro",
-  "Bukasa",
-  "Mpererwe",
-  "Kyambogo",
-  "Banda",
-  "Nakawa",
-  "Industrial Area",
-  "Old Kampala",
-  "Wandegeya",
-  "Kawanda",
-  "Matugga",
-  "Seeta",
-  "Mbalwa",
-  "Sonde",
-  "Ggaba",
-  "Katabi",
-  "Abaita",
-  "Namanve",
-  "Mbarara City",
-  "Ibanda",
-  "Rukungiri",
-  "Kanungu",
-  "Pakwach",
-  "Nebbi",
-  "Adjumani",
-  "Koboko",
-  "Yumbe",
-  "Moyo",
-  "Kotido",
-  "Kaabong",
-  "Abim",
-  "Pallisa",
-  "Budaka",
-  "Kumi",
-  "Sironko",
-  "Kapchorwa",
-  "Bukedea",
-  "Bugiri",
-  "Mayuge",
-  "Kamuli",
-  "Busia",
-  "Manafwa",
-  "Bududa",
+  "Kampala", "Wakiso", "Mukono", "Entebbe", "Jinja", "Gulu", "Mbarara",
+  "Fort Portal", "Mbale", "Masaka", "Arua", "Lira", "Soroti", "Kabale",
+  "Hoima", "Moroto", "Kitgum", "Iganga", "Tororo", "Kasese", "Bushenyi",
+  "Kamuli", "Luwero", "Mityana", "Mpigi", "Gayaza", "Bombo", "Central Region",
+  "Eastern Region", "Northern Region", "Western Region", "Ntinda", "Najjera",
+  "Kisaasi", "Kololo", "Nakasero", "Bugolobi", "Muyenga", "Buziga", "Munyonyo",
+  "Lubowa", "Seguku", "Naalya", "Najjanankumbi", "Wandegeya", "Makerere",
+  "Kawempe", "Nansana", "Kira", "Bunga", "Kabalagala", "Namugongo",
+  "Bweyogerere", "Kireka", "Mutungo", "Luzira", "Port Bell", "Nateete",
+  "Rubaga", "Ndeeba", "Kansanga", "Makindye", "Bukoto", "Kamwokya",
+  "Kiwatule", "Kulambiro", "Bukasa", "Mpererwe", "Kyambogo", "Banda",
+  "Nakawa", "Industrial Area", "Old Kampala", "Kawanda", "Matugga", "Seeta",
+  "Mbalwa", "Sonde", "Ggaba", "Katabi", "Abaita", "Namanve", "Mbarara City",
+  "Ibanda", "Rukungiri", "Kanungu", "Pakwach", "Nebbi", "Adjumani", "Koboko",
+  "Yumbe", "Moyo", "Kotido", "Kaabong", "Abim", "Pallisa", "Budaka", "Kumi",
+  "Sironko", "Kapchorwa", "Bukedea", "Bugiri", "Mayuge", "Busia", "Manafwa",
+  "Bududa", "Kyanja",
 ] as const;
 
 export const POPULAR_SEARCHES = [
-  "Ntinda",
-  "Najjera",
-  "Kololo",
-  "Entebbe",
-  "Jinja",
-  "Wakiso",
-  "Kyanja",
-  "Kisasi",
-  "Single room",
-  "Double room",
-  "Self contained",
-  "Bedsitter",
-  "Under 300k",
-  "300k - 700k",
-  "Over 1M",
-  "Office",
-  "Shop",
-  "Airbnb",
-  "2 bedroom",
-  "Mbarara",
-  "Gulu",
+  "Ntinda", "Najjera", "Kololo", "Entebbe", "Jinja", "Wakiso", "Kyanja",
+  "Kisaasi", "Single room", "Double room", "Self contained", "Bedsitter",
+  "Under 300k", "300k - 700k", "Over 1M", "Office", "Shop", "Airbnb",
+  "2 bedroom", "Mbarara", "Gulu",
 ] as const;
 
 type PropertyFilter = Listing["type"] | "airbnb";
@@ -151,101 +44,33 @@ type ParsedQuery = {
 
 const TYPE_ALIASES: Record<PropertyFilter, string[]> = {
   house: [
-    "house",
-    "houses",
-    "home",
-    "homes",
-    "apartment",
-    "apartments",
-    "flat",
-    "flats",
-    "rental",
-    "rentals",
-    "bungalow",
-    "villa",
-    "residence",
-    "dwelling",
-    "bedroom",
-    "bedrooms",
-    "room",
-    "rooms",
-    "self contained",
-    "self-contained",
-    "selfcontained",
-    "studio",
-    "bedsitter",
-    "bed sitter",
-    "bedsit",
-    "single room",
-    "double room",
-    "master bedroom",
-    "guest wing",
+    "house", "houses", "home", "homes", "apartment", "apartments", "flat",
+    "flats", "rental", "rentals", "bungalow", "villa", "residence", "dwelling",
+    "bedroom", "bedrooms", "room", "rooms", "self contained", "self-contained",
+    "selfcontained", "studio", "bedsitter", "bed sitter", "bedsit",
+    "single room", "double room", "master bedroom", "guest wing",
   ],
   office: [
-    "office",
-    "offices",
-    "workspace",
-    "work space",
-    "commercial",
-    "co working",
-    "coworking",
-    "business space",
+    "office", "offices", "workspace", "work space", "commercial", "co working",
+    "coworking", "business space",
   ],
   shop: [
-    "shop",
-    "shops",
-    "store",
-    "stores",
-    "retail",
-    "kiosk",
-    "stall",
-    "boutique",
-    "warehouse",
-    "showroom",
+    "shop", "shops", "store", "stores", "retail", "kiosk", "stall",
+    "boutique", "warehouse", "showroom",
   ],
   airbnb: [
-    "airbnb",
-    "air bnb",
-    "air-bnb",
-    "bnb",
-    "short stay",
-    "short-term",
-    "short term",
-    "nightly",
-    "vacation rental",
-    "holiday home",
-    "furnished",
-    "guest house",
-    "guesthouse",
+    "airbnb", "air bnb", "air-bnb", "bnb", "short stay", "short-term",
+    "short term", "nightly", "vacation rental", "holiday home", "furnished",
+    "guest house", "guesthouse",
   ],
 };
 
 const TYPO_MAP: Record<string, string> = {
-  kampara: "kampala",
-  kamapala: "kampala",
-  kampela: "kampala",
-  entebe: "entebbe",
-  jinja: "jinja",
-  jinga: "jinja",
-  ntinda: "ntinda",
-  ntind: "ntinda",
-  najjera: "najjera",
-  najera: "najjera",
-  najjerra: "najjera",
-  kisaasi: "kisaasi",
-  kisasi: "kisaasi",
-  kololo: "kololo",
-  nakasero: "nakasero",
-  bugolobi: "bugolobi",
-  mbarara: "mbarara",
-  mbarra: "mbarara",
-  airbnb: "airbnb",
-  airbnbb: "airbnb",
-  airbmb: "airbnb",
-  "airb&b": "airbnb",
-  bedsitter: "bedsitter",
-  "bed sitter": "bedsitter",
-  selfcontained: "self contained",
+  kampara: "kampala", kamapala: "kampala", kampela: "kampala",
+  entebe: "entebbe", jinga: "jinja", ntind: "ntinda",
+  najera: "najjera", najjerra: "najjera", kisasi: "kisaasi",
+  mbarra: "mbarara", airbnbb: "airbnb", airbmb: "airbnb",
+  "airb&b": "airbnb", "bed sitter": "bedsitter", selfcontained: "self contained",
 };
 
 function normalize(text: string): string {
@@ -262,7 +87,7 @@ const NORMALIZED_TYPE_ALIASES = (
   Object.entries(TYPE_ALIASES) as [PropertyFilter, string[]][]
 )
   .flatMap(([type, words]) =>
-    words.map((alias) => ({ type, alias, norm: normalize(alias) })),
+    words.map((alias) => ({ type, alias, norm: normalize(alias) }))
   )
   .sort((a, b) => b.norm.length - a.norm.length);
 
@@ -270,15 +95,12 @@ const NORMALIZED_LOCATIONS = [...UGANDA_LOCATIONS]
   .map((location) => ({ location, norm: normalize(location) }))
   .sort((a, b) => b.norm.length - a.norm.length);
 
-const NORMALIZED_AIRBNB_ALIASES = TYPE_ALIASES.airbnb.map((alias) =>
-  normalize(alias),
-);
+const NORMALIZED_AIRBNB_ALIASES = TYPE_ALIASES.airbnb.map(normalize);
 
 function levenshtein(a: string, b: string): number {
   if (a === b) return 0;
   if (!a.length) return b.length;
   if (!b.length) return a.length;
-
   const row = Array.from({ length: b.length + 1 }, (_, i) => i);
   for (let i = 1; i <= a.length; i++) {
     let prev = i;
@@ -294,7 +116,7 @@ function levenshtein(a: string, b: string): number {
 }
 
 function maxEditDistance(token: string): number {
-  if (token.length <= 3) return 0;
+  if (token.length <= 4) return 0;
   if (token.length <= 6) return 1;
   return 2;
 }
@@ -302,29 +124,16 @@ function maxEditDistance(token: string): number {
 function fuzzyMatchNormalized(hay: string, needle: string): boolean {
   if (!needle) return true;
   if (hay.includes(needle)) return true;
-
-  const hayTokens = hay.split(" ");
   const needleTokens = needle.split(" ");
-
-  if (needleTokens.length > 1) {
-    return hay.includes(needle);
-  }
-
-  return hayTokens.some((token) => {
-    if (token === needle || token.includes(needle) || needle.includes(token)) {
+  if (needleTokens.length > 1) return hay.includes(needle);
+  return hay.split(" ").some((token) => {
+    if (token === needle || token.includes(needle) || needle.includes(token))
       return true;
-    }
     return levenshtein(token, needle) <= maxEditDistance(needle);
   });
 }
 
-export function fuzzyMatch(text: string, term: string): boolean {
-  return fuzzyMatchNormalized(
-    normalize(text),
-    normalize(TYPO_MAP[term] ?? term),
-  );
-}
-
+// ─── Price parsing ────────────────────────────────────────────────────────────
 function parseAmount(raw: string, suffix?: string): number {
   let n = parseFloat(raw);
   if (Number.isNaN(n)) return 0;
@@ -343,30 +152,19 @@ function parsePriceFilters(query: string): {
   let minPrice: number | undefined;
   let maxPrice: number | undefined;
 
-  const rangeRe =
-    /(\d+(?:\.\d+)?)\s*(k|m|million|thousand)?\s*(?:-|to)\s*(\d+(?:\.\d+)?)\s*(k|m|million|thousand)?/gi;
-  rest = rest.replace(rangeRe, (_, a, aSuf, b, bSuf) => {
-    minPrice = parseAmount(a, aSuf);
-    maxPrice = parseAmount(b, bSuf);
-    return " ";
-  });
-
-  const maxRe =
-    /(?:under|below|less than|cheaper than|max|upto|up to)\s*(\d+(?:\.\d+)?)\s*(k|m|million|thousand)?/gi;
-  rest = rest.replace(maxRe, (_, n, suf) => {
-    maxPrice = parseAmount(n, suf);
-    return " ";
-  });
-
-  const minRe =
-    /(?:over|above|more than|from|min|at least)\s*(\d+(?:\.\d+)?)\s*(k|m|million|thousand)?/gi;
-  rest = rest.replace(minRe, (_, n, suf) => {
-    minPrice = parseAmount(n, suf);
-    return " ";
-  });
-
-  const plainRe = /\b(\d+(?:\.\d+)?)\s*(k|m|million|thousand)\b/gi;
-  rest = rest.replace(plainRe, (match, n, suf) => {
+  rest = rest.replace(
+    /(\d+(?:\.\d+)?)\s*(k|m|million|thousand)?\s*(?:-|to)\s*(\d+(?:\.\d+)?)\s*(k|m|million|thousand)?/gi,
+    (_, a, aSuf, b, bSuf) => { minPrice = parseAmount(a, aSuf); maxPrice = parseAmount(b, bSuf); return " "; }
+  );
+  rest = rest.replace(
+    /(?:under|below|less than|cheaper than|max|upto|up to)\s*(\d+(?:\.\d+)?)\s*(k|m|million|thousand)?/gi,
+    (_, n, suf) => { maxPrice = parseAmount(n, suf); return " "; }
+  );
+  rest = rest.replace(
+    /(?:over|above|more than|from|min|at least)\s*(\d+(?:\.\d+)?)\s*(k|m|million|thousand)?/gi,
+    (_, n, suf) => { minPrice = parseAmount(n, suf); return " "; }
+  );
+  rest = rest.replace(/\b(\d+(?:\.\d+)?)\s*(k|m|million|thousand)\b/gi, (_, n, suf) => {
     const amount = parseAmount(n, suf);
     if (minPrice === undefined && maxPrice === undefined) {
       minPrice = Math.round(amount * 0.85);
@@ -374,9 +172,7 @@ function parsePriceFilters(query: string): {
     }
     return " ";
   });
-
-  const ugxRe = /\bugx\s*(\d[\d,]*)\b/gi;
-  rest = rest.replace(ugxRe, (_, n) => {
+  rest = rest.replace(/\bugx\s*(\d[\d,]*)\b/gi, (_, n) => {
     const amount = parseInt(n.replace(/,/g, ""), 10);
     if (!Number.isNaN(amount)) {
       minPrice = Math.round(amount * 0.9);
@@ -388,6 +184,7 @@ function parsePriceFilters(query: string): {
   return { minPrice, maxPrice, rest: normalize(rest) };
 }
 
+// ─── Room parsing ─────────────────────────────────────────────────────────────
 function parseRoomFilters(query: string): {
   minRooms?: number;
   maxRooms?: number;
@@ -399,27 +196,23 @@ function parseRoomFilters(query: string): {
   let maxRooms: number | undefined;
   const roomPhrases: string[] = [];
 
-  const patterns: { re: RegExp; min?: number; max?: number; phrase: string }[] =
-    [
-      { re: /\bdouble\s+room\b/gi, min: 2, phrase: "double room" },
-      { re: /\bsingle\s+room\b/gi, min: 1, max: 1, phrase: "single room" },
-      { re: /\b(\d+)\s*bed(?:room)?s?\b/gi, phrase: "bedroom" },
-      { re: /\b(\d+)\s*br\b/gi, phrase: "br" },
-      { re: /\b(\d+)\s*rooms?\b/gi, phrase: "room" },
-      { re: /\bbedsitter\b/gi, min: 1, max: 1, phrase: "bedsitter" },
-      { re: /\bself\s*contained\b/gi, phrase: "self contained" },
-      { re: /\bstudio\b/gi, min: 1, max: 1, phrase: "studio" },
-    ];
+  const patterns: { re: RegExp; min?: number; max?: number; phrase: string }[] = [
+    { re: /\bdouble\s+room\b/gi, min: 2, phrase: "double room" },
+    { re: /\bsingle\s+room\b/gi, min: 1, max: 1, phrase: "single room" },
+    { re: /\b(\d+)\s*bed(?:room)?s?\b/gi, phrase: "bedroom" },
+    { re: /\b(\d+)\s*br\b/gi, phrase: "br" },
+    { re: /\b(\d+)\s*rooms?\b/gi, phrase: "room" },
+    { re: /\bbedsitter\b/gi, min: 1, max: 1, phrase: "bedsitter" },
+    { re: /\bself\s*contained\b/gi, phrase: "self contained" },
+    { re: /\bstudio\b/gi, min: 1, max: 1, phrase: "studio" },
+  ];
 
   for (const { re, min, max, phrase } of patterns) {
-    rest = rest.replace(re, (match, count?: string) => {
+    rest = rest.replace(re, (_, count?: string) => {
       roomPhrases.push(phrase);
       if (count) {
         const n = parseInt(count, 10);
-        if (!Number.isNaN(n)) {
-          minRooms = n;
-          maxRooms = n;
-        }
+        if (!Number.isNaN(n)) { minRooms = n; maxRooms = n; }
       } else if (min !== undefined) {
         minRooms = minRooms === undefined ? min : Math.max(minRooms, min);
         if (max !== undefined) maxRooms = max;
@@ -431,39 +224,49 @@ function parseRoomFilters(query: string): {
   return { minRooms, maxRooms, roomPhrases, rest: normalize(rest) };
 }
 
+// ─── Type detection ───────────────────────────────────────────────────────────
 function detectTypes(query: string): { types: PropertyFilter[]; rest: string } {
   let rest = query;
   const types = new Set<PropertyFilter>();
-
   for (const { type, norm } of NORMALIZED_TYPE_ALIASES) {
     if (rest.includes(norm)) {
       types.add(type);
       rest = rest.replace(norm, " ");
     }
   }
-
   return { types: [...types], rest: normalize(rest) };
 }
 
+// ─── Location detection ───────────────────────────────────────────────────────
+// Pass 1: exact substring only.
+// Pass 2: typo correction on tokens longer than 4 chars, only against
+//         location names longer than 4 chars, with a tighter edit distance.
 function detectLocations(query: string): { locations: string[]; rest: string } {
   let rest = query;
   const locations: string[] = [];
 
+  // Pass 1 — exact match
   for (const { location, norm } of NORMALIZED_LOCATIONS) {
-    if (rest.includes(norm) || fuzzyMatchNormalized(rest, norm)) {
+    if (rest.includes(norm)) {
       locations.push(location);
-      rest = rest.replace(norm, " ");
+      rest = rest.replace(norm, " ").replace(/\s+/g, " ").trim();
     }
   }
 
-  for (const token of rest.split(" ").filter(Boolean)) {
-    const corrected = normalize(TYPO_MAP[token] ?? token);
-    for (const { location, norm } of NORMALIZED_LOCATIONS) {
-      if (
-        levenshtein(corrected, norm) <= maxEditDistance(norm) &&
-        !locations.includes(location)
-      ) {
-        locations.push(location);
+  // Pass 2 — typo correction (only if nothing found yet)
+  // Skipped when we already have a location to prevent cross-matching
+  if (locations.length === 0) {
+    for (const token of rest.split(" ").filter((t) => t.length > 4)) {
+      const corrected = normalize(TYPO_MAP[token] ?? token);
+      for (const { location, norm } of NORMALIZED_LOCATIONS) {
+        if (
+          !locations.includes(location) &&
+          norm.length > 4 &&
+          // Tighter: only allow 1 edit regardless of length
+          levenshtein(corrected, norm) <= 1
+        ) {
+          locations.push(location);
+        }
       }
     }
   }
@@ -471,6 +274,7 @@ function detectLocations(query: string): { locations: string[]; rest: string } {
   return { locations, rest: normalize(rest) };
 }
 
+// ─── Main parser ──────────────────────────────────────────────────────────────
 export function parseSearchQuery(raw: string): ParsedQuery {
   const normalized = normalize(raw);
   const price = parsePriceFilters(normalized);
@@ -490,6 +294,8 @@ export function parseSearchQuery(raw: string): ParsedQuery {
   };
 }
 
+// ─── Listing matching ─────────────────────────────────────────────────────────
+
 function listingBlob(listing: Listing): string {
   return normalize(
     [
@@ -500,8 +306,20 @@ function listingBlob(listing: Listing): string {
       listing.rooms != null ? `${listing.rooms} rooms` : "",
       listing.price,
       `ugx ${listing.price}`,
-    ].join(" "),
+    ].join(" ")
   );
+}
+
+function matchesPrice(listing: Listing, parsed: ParsedQuery): boolean {
+  if (parsed.minPrice !== undefined && listing.price < parsed.minPrice) return false;
+  if (parsed.maxPrice !== undefined && listing.price > parsed.maxPrice) return false;
+  return true;
+}
+
+function matchesTypes(listing: Listing, parsed: ParsedQuery): boolean {
+  const concreteTypes = parsed.types.filter((t) => t !== "airbnb") as Listing["type"][];
+  if (concreteTypes.length === 0) return true;
+  return concreteTypes.includes(listing.type);
 }
 
 function matchesAirbnbIntent(blob: string, parsed: ParsedQuery): boolean {
@@ -513,62 +331,38 @@ function matchesRooms(
   listing: Listing,
   parsed: ParsedQuery,
   blob: string,
-  normalizedRoomPhrases: string[],
+  normalizedRoomPhrases: string[]
 ): boolean {
   if (parsed.minRooms === undefined && parsed.maxRooms === undefined) {
     if (normalizedRoomPhrases.length === 0) return true;
     return normalizedRoomPhrases.some((phrase) => blob.includes(phrase));
   }
-
   if (listing.rooms == null) {
-    return normalizedRoomPhrases.some((phrase) =>
-      fuzzyMatchNormalized(blob, phrase),
-    );
+    return normalizedRoomPhrases.some((phrase) => fuzzyMatchNormalized(blob, phrase));
   }
-
-  if (parsed.minRooms !== undefined && listing.rooms < parsed.minRooms)
-    return false;
-  if (parsed.maxRooms !== undefined && listing.rooms > parsed.maxRooms)
-    return false;
+  if (parsed.minRooms !== undefined && listing.rooms < parsed.minRooms) return false;
+  if (parsed.maxRooms !== undefined && listing.rooms > parsed.maxRooms) return false;
   return true;
 }
 
-function matchesPrice(listing: Listing, parsed: ParsedQuery): boolean {
-  if (parsed.minPrice !== undefined && listing.price < parsed.minPrice)
-    return false;
-  if (parsed.maxPrice !== undefined && listing.price > parsed.maxPrice)
-    return false;
-  return true;
-}
-
-function matchesTypes(listing: Listing, parsed: ParsedQuery): boolean {
-  const concreteTypes = parsed.types.filter(
-    (t) => t !== "airbnb",
-  ) as Listing["type"][];
-  if (concreteTypes.length === 0) return true;
-  return concreteTypes.includes(listing.type);
-}
-
+// FIX: location matching now ONLY checks location_name, never the full blob.
+// Checking the blob caused listings in nearby areas to bleed through because
+// their titles/descriptions happened to contain words that fuzzy-matched the
+// searched location name.
 function matchesLocations(
   locationNorm: string,
-  parsed: ParsedQuery,
-  blob: string,
-  normalizedLocations: string[],
+  normalizedLocations: string[]
 ): boolean {
   if (normalizedLocations.length === 0) return true;
-  return normalizedLocations.some(
-    (normalized) =>
-      fuzzyMatchNormalized(locationNorm, normalized) ||
-      fuzzyMatchNormalized(blob, normalized),
+  return normalizedLocations.some((loc) =>
+    // Exact substring first (fast path), then fuzzy for typos
+    locationNorm.includes(loc) || fuzzyMatchNormalized(locationNorm, loc)
   );
 }
 
-function matchesFreeText(
-  blob: string,
-  parsed: ParsedQuery,
-  rawNorm: string,
-): boolean {
+function matchesFreeText(blob: string, parsed: ParsedQuery, rawNorm: string): boolean {
   const tokens = parsed.text.split(" ").filter((t) => t.length > 1);
+
   if (tokens.length === 0) {
     return (
       parsed.locations.length > 0 ||
@@ -585,10 +379,8 @@ function matchesFreeText(
   return tokens.every((token) => fuzzyMatchNormalized(blob, token));
 }
 
-export function filterListings(
-  listings: Listing[],
-  rawQuery: string,
-): Listing[] {
+// ─── Public API ───────────────────────────────────────────────────────────────
+export function filterListings(listings: Listing[], rawQuery: string): Listing[] {
   const trimmed = rawQuery.trim();
   if (!trimmed) return [];
 
@@ -600,20 +392,32 @@ export function filterListings(
   return listings.filter((listing) => {
     if (!matchesPrice(listing, parsed)) return false;
     const blob = listingBlob(listing);
-    if (!matchesRooms(listing, parsed, blob, normalizedRoomPhrases))
-      return false;
+    if (!matchesRooms(listing, parsed, blob, normalizedRoomPhrases)) return false;
     if (!matchesTypes(listing, parsed)) return false;
-    if (
-      !matchesLocations(
-        normalize(listing.location_name),
-        parsed,
-        blob,
-        normalizedLocations,
-      )
-    )
-      return false;
+    // Pass only location_name — no more blob leaking
+    if (!matchesLocations(normalize(listing.location_name), normalizedLocations)) return false;
     if (!matchesAirbnbIntent(blob, parsed)) return false;
     if (!matchesFreeText(blob, parsed, rawNorm)) return false;
     return true;
   });
+}
+
+// ─── Grouped results for the UI ───────────────────────────────────────────────
+// Returns listings bucketed by location_name so SearchClient can render
+// "Available in Najjera", "Available in Ntinda" rows cleanly.
+export function groupResultsByLocation(
+  listings: Listing[]
+): { location: string; items: Listing[] }[] {
+  const map = new Map<string, Listing[]>();
+
+  for (const listing of listings) {
+    const key = listing.location_name;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(listing);
+  }
+
+  // Sort groups: largest first so the most relevant area leads
+  return Array.from(map.entries())
+    .map(([location, items]) => ({ location, items }))
+    .sort((a, b) => b.items.length - a.items.length);
 }
