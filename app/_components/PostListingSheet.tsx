@@ -180,6 +180,7 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
           placeholder="e.g. Self Contained in Ntinda"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
           className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary py-5"
         />
       </div>
@@ -192,6 +193,7 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
           placeholder="e.g. 450000"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
           className="h-auto rounded-xl bg-muted border-transparent py-5 focus:border-border focus-visible:ring-primary"
         />
       </div>
@@ -203,6 +205,7 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
           placeholder="e.g. Ntinda, Kampala"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
           className="h-auto rounded-xl bg-muted border-transparent py-5 focus:border-border focus-visible:ring-primary"
         />
       </div>
@@ -251,6 +254,7 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
           placeholder="e.g. 0772 123 456"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
           className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary py-5"
         />
         <p className="text-muted-foreground text-xs mt-1.5">
@@ -267,6 +271,7 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
           maxLength={4}
           value={pin}
           onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
           className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary tracking-widest text-center text-lg py-5"
         />
         <p className="text-muted-foreground text-xs mt-1.5">
