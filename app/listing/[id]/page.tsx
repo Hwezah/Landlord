@@ -1,23 +1,37 @@
-import { getListingById } from "@/app/actions/listings";
+import { getListingById, getListingBySlug } from "@/app/actions/listings";
 import ListingPageClient from "./ListingPageClient";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 
-// ── Dynamic metadata — runs on the server before the page renders ─────────────
-// Next.js reads this export and injects the correct <title>, <meta>, and
-// <og:*> tags into the HTML <head> for each listing URL automatically.
+// ── Resolve slug or UUID → listing ────────────────────────────────────────
+// The [id] segment can be either:
+//   - a slug:  "self-contained-in-kiwatule-a3f2"  (new links)
+//   - a UUID:  "f4739f7b-42b9-430f-8790-7b440661962e"  (old links)
+// We try slug first (fast exact match), then fall back to UUID.
+// This means every old shared link continues to work forever.
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+async function resolveListing(idOrSlug: string) {
+  if (UUID_RE.test(idOrSlug)) {
+    // Looks like a UUID — go straight to ID lookup
+    return getListingById(idOrSlug);
+  }
+  // Treat as slug
+  return getListingBySlug(idOrSlug);
+}
+
+// ── Dynamic metadata ───────────────────────────────────────────────────────
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const listing = await getListingById(id);
+  const listing = await resolveListing(id);
 
-  // If the listing doesn't exist, return minimal fallback tags.
-  // notFound() is called in the page itself so the user still gets a 404.
   if (!listing) {
     return {
       title: "Listing not found | Landlord",
@@ -34,12 +48,14 @@ export async function generateMetadata({
 
   const price = `UGX ${listing.price.toLocaleString()}/month`;
   const title = `${listing.title} — ${typeLabel} in ${listing.location_name} | Landlord`;
-  const description =
-    listing.description
-      ? `${listing.description.slice(0, 140)}…`
-      : `${typeLabel} available in ${listing.location_name} for ${price}. Find your next space on Landlord.`;
+  const description = listing.description
+    ? `${listing.description.slice(0, 140)}…`
+    : `${typeLabel} available in ${listing.location_name} for ${price}. Find your next space on Landlord.`;
 
-  // Use the first photo as the OG image, fall back to a plain text card
+  // Canonical URL always uses the slug if available, otherwise the UUID
+  const canonicalSlug = listing.slug ?? listing.id;
+  const url = `https://landlord-bay.vercel.app/listing/${canonicalSlug}`;
+
   const ogImage = listing.photos?.[0]
     ? [{ url: listing.photos[0], width: 1200, height: 630, alt: listing.title }]
     : undefined;
@@ -50,7 +66,7 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      url: `https://landlord-bay.vercel.app/listing/${listing.id}`,
+      url,
       siteName: "Landlord",
       type: "website",
       images: ogImage,
@@ -64,14 +80,14 @@ export async function generateMetadata({
   };
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
+// ── Page ───────────────────────────────────────────────────────────────────
 export default async function ListingPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const listing = await getListingById(id);
+  const listing = await resolveListing(id);
 
   if (!listing) return notFound();
 

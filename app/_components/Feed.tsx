@@ -1,4 +1,3 @@
-// app/_components/Feed.tsx
 "use client";
 import type { Listing } from "@/app/actions/listings";
 import { markAsRented, submitReport } from "@/app/actions/post-listing";
@@ -474,7 +473,7 @@ function CompactCard({
 
   return (
     <div
-      onClick={() => router.push(`/listing/${listing.id}`)}
+      onClick={() => router.push(`/listing/${listing.slug ?? listing.id}`)}
       className="flex-shrink-0 w-44 sm:w-48 md:w-56 cursor-pointer"
     >
       <div className="relative overflow-hidden rounded-xl bg-slate-900 aspect-square">
@@ -943,7 +942,7 @@ export default function Feed() {
               className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95"
             >
               <Heart
-                size={20}
+                size={26}
                 strokeWidth={1.5}
                 className={`transition-colors ${
                   isCurrentSaved

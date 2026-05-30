@@ -15,8 +15,29 @@ export type PostListingInput = {
   photos: string[];
 };
 
+// ── Slug generation ────────────────────────────────────────────────────────
+// Converts "Self Contained in Kiwatule" → "self-contained-in-kiwatule-a3f2"
+// The 4-char suffix ensures uniqueness even if two listings share a title.
+function generateSlug(title: string): string {
+  const base = title
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")        // strip accents
+    .replace(/[^a-z0-9\s-]/g, "")  // keep letters, numbers, spaces, hyphens
+    .trim()
+    .replace(/\s+/g, "-")          // spaces → hyphens
+    .replace(/-+/g, "-")           // collapse multiple hyphens
+    .slice(0, 60);                 // max 60 chars before suffix
+
+  // 4 random alphanumeric chars for uniqueness
+  const suffix = Math.random().toString(36).slice(2, 6);
+  return `${base}-${suffix}`;
+}
+
 export async function postListing(input: PostListingInput) {
   const supabase = await createClient();
+
+  const slug = generateSlug(input.title);
 
   const { data, error } = await supabase
     .from("listings")
@@ -31,8 +52,9 @@ export async function postListing(input: PostListingInput) {
       pin: input.pin,
       photos: input.photos,
       status: "available",
+      slug,
     })
-    .select("id")
+    .select("id, slug")
     .single();
 
   if (error) {
@@ -40,7 +62,7 @@ export async function postListing(input: PostListingInput) {
   }
 
   revalidatePath("/");
-  return { success: true, id: data.id };
+  return { success: true, id: data.id, slug: data.slug };
 }
 
 export async function uploadPhoto(file: File): Promise<string | null> {
@@ -101,9 +123,6 @@ export async function markAsRented(
 }
 
 // ── Submit Report ──────────────────────────────────────────────────────────
-// Inserts a report row, then counts total reports for this listing.
-// If the count reaches the threshold (5), the listing is automatically
-// flagged — it disappears from the feed pending review.
 const REPORT_THRESHOLD = 5;
 
 export async function submitReport(
@@ -112,7 +131,6 @@ export async function submitReport(
 ): Promise<{ success: boolean; error?: string; flagged?: boolean }> {
   const supabase = await createClient();
 
-  // Step 1: Insert the new report
   const { error: insertError } = await supabase
     .from("reports")
     .insert({ listing_id: listingId, reason });
@@ -121,25 +139,21 @@ export async function submitReport(
     return { success: false, error: "Could not submit report. Try again." };
   }
 
-  // Step 2: Count how many reports this listing now has
   const { count, error: countError } = await supabase
     .from("reports")
     .select("*", { count: "exact", head: true })
     .eq("listing_id", listingId);
 
   if (countError) {
-    // Report was saved — don't fail the whole action just because count failed
     return { success: true };
   }
 
-  // Step 3: If threshold reached, flag the listing
   if (count !== null && count >= REPORT_THRESHOLD) {
     await supabase
       .from("listings")
       .update({ status: "flagged" })
       .eq("id", listingId);
 
-    // Revalidate so the listing disappears from the feed on next load
     revalidatePath("/");
     return { success: true, flagged: true };
   }
