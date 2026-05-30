@@ -1,16 +1,75 @@
-// app/listing/[id]/page.tsx
 import { getListingById } from "@/app/actions/listings";
 import ListingPageClient from "./ListingPageClient";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import type { Metadata } from "next";
 
+// ── Dynamic metadata — runs on the server before the page renders ─────────────
+// Next.js reads this export and injects the correct <title>, <meta>, and
+// <og:*> tags into the HTML <head> for each listing URL automatically.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const listing = await getListingById(id);
+
+  // If the listing doesn't exist, return minimal fallback tags.
+  // notFound() is called in the page itself so the user still gets a 404.
+  if (!listing) {
+    return {
+      title: "Listing not found | Landlord",
+      description: "This listing is no longer available.",
+    };
+  }
+
+  const typeLabel =
+    listing.type === "house"
+      ? "House"
+      : listing.type === "office"
+        ? "Office Space"
+        : "Shop Space";
+
+  const price = `UGX ${listing.price.toLocaleString()}/month`;
+  const title = `${listing.title} — ${typeLabel} in ${listing.location_name} | Landlord`;
+  const description =
+    listing.description
+      ? `${listing.description.slice(0, 140)}…`
+      : `${typeLabel} available in ${listing.location_name} for ${price}. Find your next space on Landlord.`;
+
+  // Use the first photo as the OG image, fall back to a plain text card
+  const ogImage = listing.photos?.[0]
+    ? [{ url: listing.photos[0], width: 1200, height: 630, alt: listing.title }]
+    : undefined;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `https://landlord-bay.vercel.app/listing/${listing.id}`,
+      siteName: "Landlord",
+      type: "website",
+      images: ogImage,
+    },
+    twitter: {
+      card: ogImage ? "summary_large_image" : "summary",
+      title,
+      description,
+      images: ogImage ? [listing.photos[0]] : undefined,
+    },
+  };
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 export default async function ListingPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  // In Next.js 15+, params is a Promise — must be awaited first
   const { id } = await params;
   const listing = await getListingById(id);
 
@@ -42,4 +101,3 @@ export default async function ListingPage({
     </div>
   );
 }
-
