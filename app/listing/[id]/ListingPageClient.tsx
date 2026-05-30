@@ -1,4 +1,4 @@
-// app/listing/[id]/ListingPageClient.tsx
+
 "use client";
 
 import type { Listing } from "@/app/actions/listings";
@@ -477,19 +477,14 @@ export default function ListingPageClient({ listing }: { listing: Listing }) {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl sm:text-3xl font-semibold text-foreground leading-snug">
-              {listing.title}
+              <span className={`font-bold capitalize ${styles.text}`}>{listing.type}</span>
+              <span className={`mx-1 ${styles.text} opacity-60`}> |</span>
+              {" "}{listing.title}
             </h1>
             <div className="flex items-center gap-1.5 mt-2">
               <MapPin size={14} className="text-orange-400 shrink-0" strokeWidth={2.5} />
               <span className="text-muted-foreground text-sm">{listing.location_name}</span>
             </div>
-          </div>
-
-          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border shrink-0 ${styles.bg} ${styles.border}`}>
-            <div className={`w-1.5 h-1.5 rounded-full ${styles.dot}`} />
-            <span className={`text-xs font-semibold uppercase tracking-wide ${styles.text}`}>
-              {styles.label}
-            </span>
           </div>
         </div>
       </div>

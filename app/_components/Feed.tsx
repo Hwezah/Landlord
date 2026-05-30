@@ -353,19 +353,11 @@ function DetailContent({
 
       {/* Type + Title + Price */}
       <div>
-        <div
-          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border mb-2 ${styles.bg} ${styles.border}`}
-        >
-          <div className={`w-1.5 h-1.5 rounded-full ${styles.dot}`} />
-          <span
-            className={`text-[11px] font-medium tracking-wide uppercase ${styles.text}`}
-          >
-            {listing.type}
-          </span>
-        </div>
         <div className="flex w-full flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
           <h2 className="w-fit max-w-full min-w-0 flex-auto break-words text-foreground font-medium text-lg leading-tight">
-            {listing.title}
+            <span className={`font-bold capitalize ${styles.text}`}>{listing.type}</span>
+            <span className={`mx-1 ${styles.text} opacity-60`}> |</span>
+            {" "}{listing.title}
           </h2>
           <div className="flex shrink-0 items-baseline gap-1 whitespace-nowrap text-left">
             <span className="text-sm text-muted-foreground font-normal">
@@ -868,32 +860,16 @@ export default function Feed() {
 
           {/* Bottom Content Overlay */}
           <div className="absolute bottom-20 left-4 right-20 z-10">
-            <div className="flex items-center gap-2 mb-3">
-              <div
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border ${styles.bg} ${styles.border}`}
-              >
-                <div className={`w-1.5 h-1.5 rounded-full ${styles.dot}`} />
-                <span
-                  className={`text-[11px] font-bold tracking-wide uppercase ${styles.text}`}
-                >
-                  {listing.type}
-                </span>
+            {distanceBadge && (
+              <div className="inline-flex items-center gap-1 px-2.5 py-1 mb-2 rounded-full bg-white/15 backdrop-blur-md border border-white/25">
+                <Navigation size={10} className="text-white" strokeWidth={2.5} />
+                <span className="text-[11px] font-bold text-white">{distanceBadge}</span>
               </div>
-              {distanceBadge && (
-                <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/25">
-                  <Navigation
-                    size={10}
-                    className="text-white"
-                    strokeWidth={2.5}
-                  />
-                  <span className="text-[11px] font-bold text-white">
-                    {distanceBadge}
-                  </span>
-                </div>
-              )}
-            </div>
+            )}
             <h2 className="text-white font-medium text-lg leading-tight mb-1.5 drop-shadow-lg">
-              {listing.title}
+              <span className={`font-bold capitalize ${styles.text}`}>{listing.type}</span>
+              <span className={`mx-1 ${styles.text} opacity-60`}> |</span>
+              {" "}{listing.title}
             </h2>
             <div className="flex items-center gap-1.5 mb-2">
               <MapPin
