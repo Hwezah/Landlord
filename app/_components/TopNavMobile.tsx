@@ -18,7 +18,9 @@ const priceLabels: Record<PriceRange, string> = {
 };
 
 function FilterContent({ onApply }: { onApply: () => void }) {
-  const { filters, setFilters, resetFilters, activeFilterCount } = useFeed();
+  // filters = draft state (what the user is tweaking inside the modal)
+  // appliedFilters = what's currently live in the feed
+  const { filters, setFilters, appliedFilters, resetFilters, activeFilterCount } = useFeed();
 
   return (
     <div className="space-y-5">
@@ -31,6 +33,8 @@ function FilterContent({ onApply }: { onApply: () => void }) {
               key={type}
               onClick={() => setFilters({ ...filters, type })}
               className={`py-2 rounded-xl text-sm font-medium capitalize transition-all ${
+                // Highlight the draft selection, not the applied one,
+                // so the user sees what they're about to apply.
                 filters.type === type
                   ? "bg-foreground text-background"
                   : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -40,6 +44,12 @@ function FilterContent({ onApply }: { onApply: () => void }) {
             </button>
           ))}
         </div>
+        {/* Show a subtle hint when the draft differs from what's applied */}
+        {filters.type !== appliedFilters.type && (
+          <p className="text-[11px] text-muted-foreground mt-2">
+            Hit &quot;Show listings&quot; to apply
+          </p>
+        )}
       </div>
 
       {/* Price Range */}
@@ -87,13 +97,29 @@ function FilterContent({ onApply }: { onApply: () => void }) {
       {/* Location */}
       <div>
         <p className="text-sm font-medium text-foreground mb-3">Location</p>
-        <Input
-          type="text"
-          placeholder="e.g. Ntinda, Kisaasi, Kololo..."
-          value={filters.location}
-          onChange={(e) => setFilters({ ...filters, location: e.target.value })}
-          className="h-auto rounded-xl bg-muted border-transparent py-2.5 text-sm focus:border-border focus-visible:ring-primary"
-        />
+        {/* Wrap in a form so the mobile keyboard "Go" button triggers onSubmit,
+            and preventDefault stops any page reload. The onKeyDown handles
+            desktop Enter. Both call onApply(). */}
+        <form
+          onSubmit={(e) => { e.preventDefault(); onApply(); }}
+          className="contents"
+        >
+          <Input
+            type="search"
+            inputMode="search"
+            placeholder="e.g. Ntinda, Kisaasi, Kololo..."
+            value={filters.location}
+            onChange={(e) => setFilters({ ...filters, location: e.target.value })}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                e.stopPropagation();
+                onApply();
+              }
+            }}
+            className="h-auto rounded-xl bg-muted border-transparent py-2.5 text-sm focus:border-border focus-visible:ring-primary"
+          />
+        </form>
       </div>
 
       {/* Buttons */}
@@ -124,16 +150,25 @@ export default function TopNavMobile() {
     activeFilterCount,
     filterSheetOpen,
     setFilterSheetOpen,
-    filters,
+    appliedFilters,   // ← use appliedFilters (not filters) for the nav highlight
+    setTypeFilter,    // ← the new atomic setter
     setFilters,
+    filters,
   } = useFeed();
 
   const isMobile = useIsMobile();
-  const { theme, setTheme } = useTheme(); // ← this was missing
+  const { theme, setTheme } = useTheme();
 
   function handleApply() {
     applyFilters();
     setFilterSheetOpen(false);
+  }
+
+  // When the filter modal opens, sync the draft to whatever is currently applied
+  // so the user sees the live state as the starting point for edits.
+  function handleOpenFilterSheet() {
+    setFilters(appliedFilters);
+    setFilterSheetOpen(true);
   }
 
   return (
@@ -153,17 +188,13 @@ export default function TopNavMobile() {
               {(["all", "house", "office", "shop"] as PropertyType[]).map((type) => (
                 <button
                   key={type}
-                  onClick={() => {
-                    const nextFilters = {
-                      ...filters,
-                      type,
-                    };
-                  
-                    setFilters(nextFilters);
-                    applyFilters(nextFilters);
-                  }}
+                  // setTypeFilter updates both filters + appliedFilters atomically.
+                  // No more stale closure — results update instantly.
+                  onClick={() => setTypeFilter(type)}
                   className={`text-sm font-medium capitalize transition-colors pb-0.5 ${
-                    filters.type === type
+                    // Highlight against appliedFilters so the active tab always
+                    // matches what the feed is actually showing.
+                    appliedFilters.type === type
                       ? "text-foreground border-b-2 border-foreground"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
@@ -177,7 +208,7 @@ export default function TopNavMobile() {
             <div className="hidden md:flex items-center gap-3">
               <Button
                 variant="outline"
-                onClick={() => setFilterSheetOpen(true)}
+                onClick={handleOpenFilterSheet}
                 className="relative rounded-full gap-2"
               >
                 <SlidersHorizontal size={14} />
