@@ -26,50 +26,31 @@ export type FilterState = {
 type ActiveTab = "foryou" | "nearby" | "saved";
 
 type FeedContextValue = {
-  // Listings
   listings: Listing[];
   filteredListings: Listing[];
-
-  // DB-derived location names — passed to the search parser
   locations: string[];
-
-  // Active listing index for feed
   currentIndex: number;
   setCurrentIndex: (index: number) => void;
-
-  // Current photo index per listing
   currentPhoto: number;
   setCurrentPhoto: (index: number) => void;
-
-  // Tabs
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
-
-  // Filters
   filters: FilterState;
   setFilters: (filters: FilterState) => void;
   appliedFilters: FilterState;
   applyFilters: (nextFilters?: FilterState) => void;
   resetFilters: () => void;
   activeFilterCount: number;
-
-  // Detail sheet
   detailOpen: boolean;
   setDetailOpen: (open: boolean) => void;
-
-  // Filter sheet
   filterSheetOpen: boolean;
   setFilterSheetOpen: (open: boolean) => void;
-
-  // Saved listings
   savedIds: Set<string>;
   toggleSave: (listingId: string) => Promise<void>;
-
-  // Location (for distance badge in Feed)
   userLocation: LatLng | null;
 };
 
-// ── Defaults ─────────────────────────────────────────────────────────────────
+// ── Defaults ──────────────────────────────────────────────────────────────────
 const defaultFilters: FilterState = {
   type: "all",
   priceRange: "any",
@@ -77,24 +58,79 @@ const defaultFilters: FilterState = {
   location: "",
 };
 
-// Kampala fallback coords — used when user denies location
 const KAMPALA: LatLng = { lat: 0.3476, lng: 32.5825 };
 
-// ── Haversine formula ─────────────────────────────────────────────────────────
+// ── Fuzzy location matching ───────────────────────────────────────────────────
+// Same algorithm used in listings-search.ts so the filter modal behaves
+// identically to the search page — typos like "Kalelwe" match "Kalerwe".
+
+function normalize(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function levenshtein(a: string, b: string): number {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  const row = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    let prev = i;
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      const next = Math.min(row[j] + 1, prev + 1, row[j - 1] + cost);
+      row[j - 1] = prev;
+      prev = next;
+    }
+    row[b.length] = prev;
+  }
+  return row[b.length];
+}
+
+// Returns true if the listing's location_name fuzzy-matches the query.
+// Strategy:
+//   1. Fast path — plain substring match (handles "Kaler" matching "Kalerwe")
+//   2. Token-level Levenshtein — each word in the query must be close to
+//      at least one word in the location name (handles "Kalelwe" → "Kalerwe")
+function locationMatches(locationName: string, query: string): boolean {
+  if (!query) return true;
+
+  const locNorm = normalize(locationName);
+  const queryNorm = normalize(query);
+
+  // Fast path: exact substring
+  if (locNorm.includes(queryNorm)) return true;
+
+  // Token fuzzy match — every query token must match some location token
+  const queryTokens = queryNorm.split(" ").filter(Boolean);
+  const locTokens = locNorm.split(" ").filter(Boolean);
+
+  return queryTokens.every((qToken) =>
+    locTokens.some((lToken) => {
+      if (lToken.includes(qToken) || qToken.includes(lToken)) return true;
+      // Allow 1 edit for tokens ≤6 chars, 2 edits for longer
+      const maxDist = qToken.length <= 4 ? 0 : qToken.length <= 6 ? 1 : 2;
+      return levenshtein(qToken, lToken) <= maxDist;
+    })
+  );
+}
+
+// ── Haversine ─────────────────────────────────────────────────────────────────
 function haversine(a: LatLng, b: LatLng): number {
   const R = 6371;
   const toRad = (deg: number) => (deg * Math.PI) / 180;
-
   const dLat = toRad(b.lat - a.lat);
   const dLng = toRad(b.lng - a.lng);
-
   const sinDLat = Math.sin(dLat / 2);
   const sinDLng = Math.sin(dLng / 2);
-
   const a2 =
     sinDLat * sinDLat +
     Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * sinDLng * sinDLng;
-
   return R * 2 * Math.atan2(Math.sqrt(a2), Math.sqrt(1 - a2));
 }
 
@@ -105,7 +141,7 @@ const FeedContext = createContext<FeedContextValue | null>(null);
 export function FeedProvider({
   children,
   listings,
-  locations = [],  // distinct location_name values from the DB
+  locations = [],
 }: {
   children: ReactNode;
   listings: Listing[];
@@ -122,11 +158,9 @@ export function FeedProvider({
   const { savedIds, toggleSave } = useSavedListings();
   const { location, permissionStatus } = useLocation();
 
-  // Use real location if granted, otherwise fall back to Kampala
   const userLocation: LatLng =
     permissionStatus === "granted" && location ? location : KAMPALA;
 
-  // ── Apply filters ──────────────────────────────────────────────────────────
   const applyFilters = useCallback(
     (nextFilters?: FilterState) => {
       setAppliedFilters(nextFilters ?? filters);
@@ -136,7 +170,6 @@ export function FeedProvider({
     [filters],
   );
 
-  // ── Reset filters ──────────────────────────────────────────────────────────
   const resetFilters = useCallback(() => {
     setFilters(defaultFilters);
     setAppliedFilters(defaultFilters);
@@ -144,32 +177,38 @@ export function FeedProvider({
     setCurrentPhoto(0);
   }, []);
 
-  // ── Handle tab changes — reset index when switching tabs ───────────────────
   const handleSetActiveTab = useCallback((tab: ActiveTab) => {
     setActiveTab(tab);
     setCurrentIndex(0);
     setCurrentPhoto(0);
   }, []);
 
-  // ── Build filtered + sorted listings ──────────────────────────────────────
+  // ── Filtered listings ──────────────────────────────────────────────────────
   const filteredListings = useMemo(() => {
     let result = listings.filter((listing) => {
+      // Type
       if (appliedFilters.type !== "all" && listing.type !== appliedFilters.type) {
         return false;
       }
+
+      // Price
       if (appliedFilters.priceRange !== "any") {
         if (appliedFilters.priceRange === "under300" && listing.price >= 300000) return false;
         if (appliedFilters.priceRange === "300to700" && (listing.price < 300000 || listing.price > 700000)) return false;
         if (appliedFilters.priceRange === "over700" && listing.price <= 700000) return false;
       }
+
+      // Rooms
       if (appliedFilters.rooms !== "any") {
         if (appliedFilters.rooms === "3+" && (listing.rooms ?? 0) < 3) return false;
         if (appliedFilters.rooms !== "3+" && listing.rooms !== parseInt(appliedFilters.rooms)) return false;
       }
+
+      // Location — fuzzy match instead of plain .includes()
       if (appliedFilters.location !== "") {
-        const query = appliedFilters.location.toLowerCase();
-        if (!listing.location_name.toLowerCase().includes(query)) return false;
+        if (!locationMatches(listing.location_name, appliedFilters.location)) return false;
       }
+
       return true;
     });
 
@@ -188,7 +227,6 @@ export function FeedProvider({
     return result;
   }, [listings, appliedFilters, activeTab, savedIds, userLocation]);
 
-  // ── Active filter count ────────────────────────────────────────────────────
   const activeFilterCount = [
     appliedFilters.type !== "all",
     appliedFilters.priceRange !== "any",
@@ -231,9 +269,7 @@ export function FeedProvider({
 // ── Hook ──────────────────────────────────────────────────────────────────────
 export function useFeed() {
   const ctx = useContext(FeedContext);
-  if (!ctx) {
-    throw new Error("useFeed must be used within a FeedProvider");
-  }
+  if (!ctx) throw new Error("useFeed must be used within a FeedProvider");
   return ctx;
 }
 
