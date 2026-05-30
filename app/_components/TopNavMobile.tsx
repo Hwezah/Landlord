@@ -150,8 +150,7 @@ export default function TopNavMobile() {
     activeFilterCount,
     filterSheetOpen,
     setFilterSheetOpen,
-    appliedFilters,   // ← use appliedFilters (not filters) for the nav highlight
-    setTypeFilter,    // ← the new atomic setter
+    appliedFilters,
     setFilters,
     filters,
   } = useFeed();
@@ -188,9 +187,11 @@ export default function TopNavMobile() {
               {(["all", "house", "office", "shop"] as PropertyType[]).map((type) => (
                 <button
                   key={type}
-                  // setTypeFilter updates both filters + appliedFilters atomically.
-                  // No more stale closure — results update instantly.
-                  onClick={() => setTypeFilter(type)}
+                  onClick={() => {
+                    const next = { ...filters, type };
+                    setFilters(next);
+                    applyFilters(next);
+                  }}
                   className={`text-sm font-medium capitalize transition-colors pb-0.5 ${
                     // Highlight against appliedFilters so the active tab always
                     // matches what the feed is actually showing.
