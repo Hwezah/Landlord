@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export type Listing = {
   id: string;
-  slug: string | null;  // null for listings posted before slugs were added
+  slug: string | null;
   type: "house" | "office" | "shop";
   title: string;
   description: string;
@@ -14,20 +14,28 @@ export type Listing = {
   latitude: number | null;
   longitude: number | null;
   rooms: number | null;
+  room_type: string | null;
+  shop_type: string | null;
+  price_type: "per_month" | "per_night";
+  amenities: string[];
   phone_number: string;
   photos: string[];
   status: string;
   created_at: string;
 };
 
+const LISTING_SELECT = `
+  id, slug, type, title, description, price, location_name,
+  latitude, longitude, rooms, room_type, shop_type, price_type,
+  amenities, phone_number, photos, status, created_at
+`;
+
 export async function getListings(): Promise<Listing[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("listings")
-    .select(
-      "id, slug, type, title, description, price, location_name, latitude, longitude, rooms, phone_number, photos, status, created_at"
-    )
+    .select(LISTING_SELECT)
     .eq("status", "available")
     .order("created_at", { ascending: false });
 
@@ -39,9 +47,6 @@ export async function getListings(): Promise<Listing[]> {
   return (data as Listing[]) ?? [];
 }
 
-// Returns every distinct location_name that currently has at least one
-// available listing — used to drive search suggestions and the location
-// parser instead of the hardcoded UGANDA_LOCATIONS array.
 export async function getDistinctLocations(): Promise<string[]> {
   const supabase = await createClient();
 
@@ -63,15 +68,12 @@ export async function getDistinctLocations(): Promise<string[]> {
   return [...seen].sort();
 }
 
-// Fetch by slug (new URLs) — used by the listing detail page.
 export async function getListingBySlug(slug: string): Promise<Listing | null> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("listings")
-    .select(
-      "id, slug, type, title, description, price, location_name, latitude, longitude, rooms, phone_number, photos, status, created_at"
-    )
+    .select(LISTING_SELECT)
     .eq("slug", slug)
     .single();
 
@@ -79,15 +81,12 @@ export async function getListingBySlug(slug: string): Promise<Listing | null> {
   return data as Listing;
 }
 
-// Fetch by UUID — fallback for old shared links that used /listing/<uuid>.
 export async function getListingById(id: string): Promise<Listing | null> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("listings")
-    .select(
-      "id, slug, type, title, description, price, location_name, latitude, longitude, rooms, phone_number, photos, status, created_at"
-    )
+    .select(LISTING_SELECT)
     .eq("id", id)
     .single();
 

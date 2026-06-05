@@ -1,6 +1,11 @@
 "use client";
 
-import type { PriceRange, PropertyType } from "@/app/providers/feed-provider";
+import type {
+  PriceRange,
+  PropertyType,
+  RoomType,
+  ShopType,
+} from "@/app/providers/feed-provider";
 import { useFeed } from "@/app/providers/feed-provider";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +27,8 @@ import { useTheme } from "next-themes";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
+// ── Labels ────────────────────────────────────────────────────────────────────
+
 const priceLabels: Record<PriceRange, string> = {
   any: "Any price",
   under300: "Under 300k",
@@ -29,9 +36,51 @@ const priceLabels: Record<PriceRange, string> = {
   over700: "700k+",
 };
 
+const ROOM_TYPE_OPTIONS: { value: RoomType; label: string }[] = [
+  { value: "any", label: "Any" },
+  { value: "single_room", label: "Single Room" },
+  { value: "double_room", label: "Double Room" },
+  { value: "self_contained", label: "Self-Contained" },
+  { value: "studio_room", label: "Studio Room" },
+  { value: "flat", label: "Flat" },
+  { value: "bungalow", label: "Bungalow" },
+  { value: "maisonette", label: "Maisonette" },
+  { value: "airbnb", label: "Airbnb" },
+];
+
+const SHOP_TYPE_OPTIONS: { value: ShopType; label: string }[] = [
+  { value: "any", label: "Any" },
+  { value: "whole_shop", label: "Whole Shop" },
+  { value: "stall", label: "Stall / Subrent" },
+];
+
+// ── Chip ──────────────────────────────────────────────────────────────────────
+function Chip({
+  label,
+  selected,
+  onClick,
+}: {
+  label: string;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`px-3.5 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
+        selected
+          ? "bg-foreground text-background"
+          : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+// ── Filter content ────────────────────────────────────────────────────────────
 function FilterContent({ onApply }: { onApply: () => void }) {
-  // filters = draft state (what the user is tweaking inside the modal)
-  // appliedFilters = what's currently live in the feed
   const {
     filters,
     setFilters,
@@ -42,7 +91,7 @@ function FilterContent({ onApply }: { onApply: () => void }) {
 
   return (
     <div className="space-y-5">
-      {/* Property Type */}
+      {/* ── Property Type ──────────────────────────────────────────────────── */}
       <div>
         <p className="text-sm font-medium text-foreground mb-3">
           Property type
@@ -52,10 +101,17 @@ function FilterContent({ onApply }: { onApply: () => void }) {
             (type) => (
               <button
                 key={type}
-                onClick={() => setFilters({ ...filters, type })}
+                type="button"
+                onClick={() =>
+                  setFilters({
+                    ...filters,
+                    type,
+                    // Reset sub-type filters when switching property type
+                    roomType: "any",
+                    shopType: "any",
+                  })
+                }
                 className={`py-2 rounded-xl text-sm font-medium capitalize transition-all ${
-                  // Highlight the draft selection, not the applied one,
-                  // so the user sees what they're about to apply.
                   filters.type === type
                     ? "bg-foreground text-background"
                     : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -66,7 +122,6 @@ function FilterContent({ onApply }: { onApply: () => void }) {
             ),
           )}
         </div>
-        {/* Show a subtle hint when the draft differs from what's applied */}
         {filters.type !== appliedFilters.type && (
           <p className="text-[11px] text-muted-foreground mt-2">
             Hit &quot;Show listings&quot; to apply
@@ -74,7 +129,41 @@ function FilterContent({ onApply }: { onApply: () => void }) {
         )}
       </div>
 
-      {/* Price Range */}
+      {/* ── Room Type — shown when House or All is selected ────────────────── */}
+      {(filters.type === "house" || filters.type === "all") && (
+        <div>
+          <p className="text-sm font-medium text-foreground mb-3">Room type</p>
+          <div className="flex flex-wrap gap-2">
+            {ROOM_TYPE_OPTIONS.map(({ value, label }) => (
+              <Chip
+                key={value}
+                label={label}
+                selected={filters.roomType === value}
+                onClick={() => setFilters({ ...filters, roomType: value })}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Shop Type — shown when Shop or All is selected ─────────────────── */}
+      {(filters.type === "shop" || filters.type === "all") && (
+        <div>
+          <p className="text-sm font-medium text-foreground mb-3">Shop type</p>
+          <div className="flex flex-wrap gap-2">
+            {SHOP_TYPE_OPTIONS.map(({ value, label }) => (
+              <Chip
+                key={value}
+                label={label}
+                selected={filters.shopType === value}
+                onClick={() => setFilters({ ...filters, shopType: value })}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Price Range ────────────────────────────────────────────────────── */}
       <div>
         <p className="text-sm font-medium text-foreground mb-3">
           Monthly price (UGX)
@@ -83,6 +172,7 @@ function FilterContent({ onApply }: { onApply: () => void }) {
           {(Object.keys(priceLabels) as PriceRange[]).map((range) => (
             <button
               key={range}
+              type="button"
               onClick={() => setFilters({ ...filters, priceRange: range })}
               className={`py-2.5 rounded-xl text-sm font-medium transition-all ${
                 filters.priceRange === range
@@ -96,34 +186,9 @@ function FilterContent({ onApply }: { onApply: () => void }) {
         </div>
       </div>
 
-      {/* Rooms */}
-      {(filters.type === "house" || filters.type === "all") && (
-        <div>
-          <p className="text-sm font-medium text-foreground mb-3">Bedrooms</p>
-          <div className="grid grid-cols-4 gap-2">
-            {["any", "1", "2", "3+"].map((room) => (
-              <button
-                key={room}
-                onClick={() => setFilters({ ...filters, rooms: room })}
-                className={`py-2 rounded-xl text-sm font-medium transition-all ${
-                  filters.rooms === room
-                    ? "bg-foreground text-background"
-                    : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
-                }`}
-              >
-                {room === "any" ? "Any" : room}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Location */}
+      {/* ── Location ───────────────────────────────────────────────────────── */}
       <div>
         <p className="text-sm font-medium text-foreground mb-3">Location</p>
-        {/* Wrap in a form so the mobile keyboard "Go" button triggers onSubmit,
-            and preventDefault stops any page reload. The onKeyDown handles
-            desktop Enter. Both call onApply(). */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -151,7 +216,7 @@ function FilterContent({ onApply }: { onApply: () => void }) {
         </form>
       </div>
 
-      {/* Buttons */}
+      {/* ── Buttons ────────────────────────────────────────────────────────── */}
       <div className="flex gap-3 pt-1">
         {activeFilterCount > 0 && (
           <Button
@@ -173,6 +238,7 @@ function FilterContent({ onApply }: { onApply: () => void }) {
   );
 }
 
+// ── TopNavMobile ──────────────────────────────────────────────────────────────
 export default function TopNavMobile() {
   const {
     applyFilters,
@@ -194,8 +260,6 @@ export default function TopNavMobile() {
     setFilterSheetOpen(false);
   }
 
-  // When the filter modal opens, sync the draft to whatever is currently applied
-  // so the user sees the live state as the starting point for edits.
   function handleOpenFilterSheet() {
     setFilters(appliedFilters);
     setFilterSheetOpen(true);
@@ -220,20 +284,24 @@ export default function TopNavMobile() {
               Landlord
             </span>
 
-            {/* ── Desktop: Category Links ────────────────────────────────── */}
+            {/* Desktop: Category Links */}
             <nav className="hidden md:flex items-center flex-1 justify-center gap-6">
               {(["all", "house", "office", "shop"] as PropertyType[]).map(
                 (type) => (
                   <button
                     key={type}
+                    type="button"
                     onClick={() => {
-                      const next = { ...filters, type };
+                      const next = {
+                        ...filters,
+                        type,
+                        roomType: "any" as RoomType,
+                        shopType: "any" as ShopType,
+                      };
                       setFilters(next);
                       applyFilters(next);
                     }}
                     className={`text-sm font-medium capitalize transition-colors pb-0.5 ${
-                      // Highlight against appliedFilters so the active tab always
-                      // matches what the feed is actually showing.
                       appliedFilters.type === type
                         ? "text-foreground border-b-2 border-foreground"
                         : "text-muted-foreground hover:text-foreground"
@@ -245,7 +313,7 @@ export default function TopNavMobile() {
               )}
             </nav>
 
-            {/* ── Desktop: Right Actions ─────────────────────────────────── */}
+            {/* Desktop: Right Actions */}
             <div className="hidden md:flex items-center gap-3">
               <Button
                 variant="outline"
@@ -260,8 +328,6 @@ export default function TopNavMobile() {
                   </span>
                 )}
               </Button>
-
-              {/* Theme Toggle */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -282,6 +348,7 @@ export default function TopNavMobile() {
           <SheetContent
             side="bottom"
             className="rounded-t-3xl max-h-[90vh] overflow-y-auto px-5 pb-8"
+            style={{ scrollbarWidth: "none" }}
           >
             <div className="w-9 h-1 rounded-full bg-border mx-auto mb-4" />
             <SheetHeader className="flex flex-row items-center justify-between pb-4 border-b border-border mb-5">

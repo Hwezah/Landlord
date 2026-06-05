@@ -16,10 +16,24 @@ import { useLocation, type LatLng } from "@/app/_components/LocationProvider";
 export type PropertyType = "all" | "house" | "office" | "shop";
 export type PriceRange = "any" | "under300" | "300to700" | "over700";
 
+export type RoomType =
+  | "any"
+  | "single_room"
+  | "double_room"
+  | "self_contained"
+  | "studio_room"
+  | "flat"
+  | "bungalow"
+  | "maisonette"
+  | "airbnb";
+
+export type ShopType = "any" | "whole_shop" | "stall";
+
 export type FilterState = {
   type: PropertyType;
   priceRange: PriceRange;
-  rooms: string;
+  roomType: RoomType;
+  shopType: ShopType;
   location: string;
 };
 
@@ -54,16 +68,14 @@ type FeedContextValue = {
 const defaultFilters: FilterState = {
   type: "all",
   priceRange: "any",
-  rooms: "any",
+  roomType: "any",
+  shopType: "any",
   location: "",
 };
 
 const KAMPALA: LatLng = { lat: 0.3476, lng: 32.5825 };
 
 // ── Fuzzy location matching ───────────────────────────────────────────────────
-// Same algorithm used in listings-search.ts so the filter modal behaves
-// identically to the search page — typos like "Kalelwe" match "Kalerwe".
-
 function normalize(text: string): string {
   return text
     .toLowerCase()
@@ -92,31 +104,19 @@ function levenshtein(a: string, b: string): number {
   return row[b.length];
 }
 
-// Returns true if the listing's location_name fuzzy-matches the query.
-// Strategy:
-//   1. Fast path — plain substring match (handles "Kaler" matching "Kalerwe")
-//   2. Token-level Levenshtein — each word in the query must be close to
-//      at least one word in the location name (handles "Kalelwe" → "Kalerwe")
 function locationMatches(locationName: string, query: string): boolean {
   if (!query) return true;
-
   const locNorm = normalize(locationName);
   const queryNorm = normalize(query);
-
-  // Fast path: exact substring
   if (locNorm.includes(queryNorm)) return true;
-
-  // Token fuzzy match — every query token must match some location token
   const queryTokens = queryNorm.split(" ").filter(Boolean);
   const locTokens = locNorm.split(" ").filter(Boolean);
-
   return queryTokens.every((qToken) =>
     locTokens.some((lToken) => {
       if (lToken.includes(qToken) || qToken.includes(lToken)) return true;
-      // Allow 1 edit for tokens ≤6 chars, 2 edits for longer
       const maxDist = qToken.length <= 4 ? 0 : qToken.length <= 6 ? 1 : 2;
       return levenshtein(qToken, lToken) <= maxDist;
-    })
+    }),
   );
 }
 
@@ -151,7 +151,8 @@ export function FeedProvider({
   const [currentPhoto, setCurrentPhoto] = useState(0);
   const [activeTab, setActiveTab] = useState<ActiveTab>("foryou");
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
-  const [appliedFilters, setAppliedFilters] = useState<FilterState>(defaultFilters);
+  const [appliedFilters, setAppliedFilters] =
+    useState<FilterState>(defaultFilters);
   const [detailOpen, setDetailOpen] = useState(false);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
 
@@ -187,26 +188,36 @@ export function FeedProvider({
   const filteredListings = useMemo(() => {
     let result = listings.filter((listing) => {
       // Type
-      if (appliedFilters.type !== "all" && listing.type !== appliedFilters.type) {
+      if (appliedFilters.type !== "all" && listing.type !== appliedFilters.type)
         return false;
-      }
 
       // Price
       if (appliedFilters.priceRange !== "any") {
-        if (appliedFilters.priceRange === "under300" && listing.price >= 300000) return false;
-        if (appliedFilters.priceRange === "300to700" && (listing.price < 300000 || listing.price > 700000)) return false;
-        if (appliedFilters.priceRange === "over700" && listing.price <= 700000) return false;
+        if (appliedFilters.priceRange === "under300" && listing.price >= 300000)
+          return false;
+        if (
+          appliedFilters.priceRange === "300to700" &&
+          (listing.price < 300000 || listing.price > 700000)
+        )
+          return false;
+        if (appliedFilters.priceRange === "over700" && listing.price <= 700000)
+          return false;
       }
 
-      // Rooms
-      if (appliedFilters.rooms !== "any") {
-        if (appliedFilters.rooms === "3+" && (listing.rooms ?? 0) < 3) return false;
-        if (appliedFilters.rooms !== "3+" && listing.rooms !== parseInt(appliedFilters.rooms)) return false;
+      // Room type — only applies when type is house (or all)
+      if (appliedFilters.roomType !== "any" && listing.type === "house") {
+        if (listing.room_type !== appliedFilters.roomType) return false;
       }
 
-      // Location — fuzzy match instead of plain .includes()
+      // Shop type — only applies when type is shop (or all)
+      if (appliedFilters.shopType !== "any" && listing.type === "shop") {
+        if (listing.shop_type !== appliedFilters.shopType) return false;
+      }
+
+      // Location — fuzzy match
       if (appliedFilters.location !== "") {
-        if (!locationMatches(listing.location_name, appliedFilters.location)) return false;
+        if (!locationMatches(listing.location_name, appliedFilters.location))
+          return false;
       }
 
       return true;
@@ -218,8 +229,14 @@ export function FeedProvider({
       result = result
         .filter((l) => l.latitude !== null && l.longitude !== null)
         .sort((a, b) => {
-          const distA = haversine(userLocation, { lat: a.latitude!, lng: a.longitude! });
-          const distB = haversine(userLocation, { lat: b.latitude!, lng: b.longitude! });
+          const distA = haversine(userLocation, {
+            lat: a.latitude!,
+            lng: a.longitude!,
+          });
+          const distB = haversine(userLocation, {
+            lat: b.latitude!,
+            lng: b.longitude!,
+          });
           return distA - distB;
         });
     }
@@ -230,7 +247,8 @@ export function FeedProvider({
   const activeFilterCount = [
     appliedFilters.type !== "all",
     appliedFilters.priceRange !== "any",
-    appliedFilters.rooms !== "any",
+    appliedFilters.roomType !== "any",
+    appliedFilters.shopType !== "any",
     appliedFilters.location !== "",
   ].filter(Boolean).length;
 

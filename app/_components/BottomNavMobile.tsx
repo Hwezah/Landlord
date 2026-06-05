@@ -1,6 +1,9 @@
 "use client";
 import PostListingSheet from "@/app/_components/PostListingSheet";
+import AuthSheet from "@/app/_components/AuthSheet";
+import ProfileSheet from "@/app/_components/ProfileSheet";
 import { useFeedOptional } from "@/app/providers/feed-provider";
+import { useAuth } from "@/app/providers/auth-provider";
 import { Home, Plus, Search, SlidersHorizontal, User } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -9,9 +12,23 @@ export default function BottomNavMobile() {
   const router = useRouter();
   const pathname = usePathname();
   const [postOpen, setPostOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const feed = useFeedOptional();
   const activeTab = feed?.activeTab ?? "foryou";
+  const { user, loading } = useAuth();
+
+  // Avatar initials for logged-in state
+  const displayName = user?.user_metadata?.display_name as string | undefined;
+  const initials = displayName
+    ? displayName
+        .split(" ")
+        .map((w: string) => w[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : (user?.email?.[0]?.toUpperCase() ?? null);
 
   return (
     <>
@@ -31,26 +48,27 @@ export default function BottomNavMobile() {
                   setPostOpen(true);
                   return;
                 }
-
                 if (id === "home") {
                   router.push("/");
                   feed?.setActiveTab("foryou");
                   return;
                 }
-
                 if (id === "search") {
                   router.push("/search");
                   return;
                 }
-
                 if (id === "filter") {
                   if (pathname !== "/") {
                     router.push("/?filters=1");
                     return;
                   }
-
                   feed?.setFilters(feed.appliedFilters);
                   feed?.setFilterSheetOpen(true);
+                  return;
+                }
+                if (id === "account") {
+                  if (loading) return; // wait for auth to resolve
+                  user ? setProfileOpen(true) : setAuthOpen(true);
                   return;
                 }
               }}
@@ -68,13 +86,22 @@ export default function BottomNavMobile() {
                     }`
               }`}
             >
-              <Icon size={primary ? 22 : 18} />
+              {/* Account button — show initials pill when logged in */}
+              {id === "account" && !loading && user && initials ? (
+                <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                  {initials}
+                </span>
+              ) : (
+                <Icon size={primary ? 22 : 18} />
+              )}
             </button>
           ))}
         </div>
       </div>
 
       <PostListingSheet open={postOpen} onOpenChange={setPostOpen} />
+      <AuthSheet open={authOpen} onOpenChange={setAuthOpen} />
+      <ProfileSheet open={profileOpen} onOpenChange={setProfileOpen} />
     </>
   );
 }

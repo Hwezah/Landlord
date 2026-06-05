@@ -9,27 +9,26 @@ export type PostListingInput = {
   description: string;
   price: number;
   location_name: string;
-  rooms: number | null;
+  room_type: string | null;
+  shop_type: string | null;
+  price_type: "per_month" | "per_night";
+  amenities: string[];
   phone_number: string;
   pin: string;
   photos: string[];
 };
 
-// ── Slug generation ────────────────────────────────────────────────────────
-// Converts "Self Contained in Kiwatule" → "self-contained-in-kiwatule-a3f2"
-// The 4-char suffix ensures uniqueness even if two listings share a title.
 function generateSlug(title: string): string {
   const base = title
     .toLowerCase()
     .normalize("NFD")
-    .replace(/\p{M}/gu, "")        // strip accents
-    .replace(/[^a-z0-9\s-]/g, "")  // keep letters, numbers, spaces, hyphens
+    .replace(/\p{M}/gu, "")
+    .replace(/[^a-z0-9\s-]/g, "")
     .trim()
-    .replace(/\s+/g, "-")          // spaces → hyphens
-    .replace(/-+/g, "-")           // collapse multiple hyphens
-    .slice(0, 60);                 // max 60 chars before suffix
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 60);
 
-  // 4 random alphanumeric chars for uniqueness
   const suffix = Math.random().toString(36).slice(2, 6);
   return `${base}-${suffix}`;
 }
@@ -47,7 +46,10 @@ export async function postListing(input: PostListingInput) {
       description: input.description,
       price: input.price,
       location_name: input.location_name,
-      rooms: input.rooms,
+      room_type: input.room_type,
+      shop_type: input.shop_type,
+      price_type: input.price_type,
+      amenities: input.amenities,
       phone_number: input.phone_number,
       pin: input.pin,
       photos: input.photos,
@@ -86,11 +88,10 @@ export async function uploadPhoto(file: File): Promise<string | null> {
   return data.publicUrl;
 }
 
-// ── Mark as Rented ─────────────────────────────────────────────────────────
 export async function markAsRented(
   listingId: string,
   phone: string,
-  pin: string
+  pin: string,
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
 
@@ -102,7 +103,10 @@ export async function markAsRented(
     .single();
 
   if (fetchError || !listing) {
-    return { success: false, error: "Phone number doesn't match this listing." };
+    return {
+      success: false,
+      error: "Phone number doesn't match this listing.",
+    };
   }
 
   if (listing.pin !== pin.trim()) {
@@ -122,12 +126,11 @@ export async function markAsRented(
   return { success: true };
 }
 
-// ── Submit Report ──────────────────────────────────────────────────────────
 const REPORT_THRESHOLD = 5;
 
 export async function submitReport(
   listingId: string,
-  reason: string
+  reason: string,
 ): Promise<{ success: boolean; error?: string; flagged?: boolean }> {
   const supabase = await createClient();
 
@@ -144,9 +147,7 @@ export async function submitReport(
     .select("*", { count: "exact", head: true })
     .eq("listing_id", listingId);
 
-  if (countError) {
-    return { success: true };
-  }
+  if (countError) return { success: true };
 
   if (count !== null && count >= REPORT_THRESHOLD) {
     await supabase
