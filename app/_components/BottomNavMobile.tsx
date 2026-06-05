@@ -1,9 +1,9 @@
 "use client";
-import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
-import { Home, Search, Plus, Bookmark, User } from "lucide-react";
 import PostListingSheet from "@/app/_components/PostListingSheet";
 import { useFeedOptional } from "@/app/providers/feed-provider";
+import { Home, Plus, Search, SlidersHorizontal, User } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function BottomNavMobile() {
   const router = useRouter();
@@ -18,11 +18,11 @@ export default function BottomNavMobile() {
       <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
         <div className="flex items-center gap-1 bg-background/90 backdrop-blur-xl border border-border rounded-full px-3 py-2 shadow-lg">
           {[
-            { id: "home",    icon: Home     },
-            { id: "search",  icon: Search   },
-            { id: "post",    icon: Plus, primary: true },
-            { id: "saved",   icon: Bookmark },
-            { id: "account", icon: User     },
+            { id: "home", icon: Home },
+            { id: "search", icon: Search },
+            { id: "post", icon: Plus, primary: true },
+            { id: "filter", icon: SlidersHorizontal },
+            { id: "account", icon: User },
           ].map(({ id, icon: Icon, primary }) => (
             <button
               key={id}
@@ -43,11 +43,14 @@ export default function BottomNavMobile() {
                   return;
                 }
 
-                if (id === "saved") {
-                  // Never navigate to /saved — just switch the feed tab
-                  // and go back to home if we're on another page
-                  feed?.setActiveTab("saved");
-                  if (pathname !== "/") router.push("/");
+                if (id === "filter") {
+                  if (pathname !== "/") {
+                    router.push("/?filters=1");
+                    return;
+                  }
+
+                  feed?.setFilters(feed.appliedFilters);
+                  feed?.setFilterSheetOpen(true);
                   return;
                 }
               }}
@@ -55,9 +58,11 @@ export default function BottomNavMobile() {
                 primary
                   ? "w-12 h-10 rounded-full bg-primary text-primary-foreground mx-1"
                   : `w-10 h-10 rounded-full ${
-                      (id === "home"   && pathname === "/" && activeTab === "foryou") ||
+                      (id === "home" &&
+                        pathname === "/" &&
+                        activeTab === "foryou") ||
                       (id === "search" && pathname === "/search") ||
-                      (id === "saved"  && activeTab === "saved")
+                      (id === "filter" && feed?.filterSheetOpen)
                         ? "bg-muted text-foreground"
                         : "text-muted-foreground hover:text-foreground"
                     }`
