@@ -1019,7 +1019,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 const typeStyles = {
   house: { text: "text-emerald-400" },
@@ -1082,7 +1082,9 @@ function ReportSection({ listingId }: { listingId: string }) {
 
   if (done) {
     return (
-      <div className={`rounded-2xl p-4 flex flex-col items-center gap-2 ${wasFlagged ? "bg-red-500/10" : "bg-muted"}`}>
+      <div
+        className={`rounded-2xl p-4 flex flex-col items-center gap-2 ${wasFlagged ? "bg-red-500/10" : "bg-muted"}`}
+      >
         <span className="text-2xl">{wasFlagged ? "🚩" : "🙏"}</span>
         <p className="text-foreground font-semibold text-sm">
           {wasFlagged ? "Listing has been flagged" : "Report submitted"}
@@ -1105,8 +1107,12 @@ function ReportSection({ listingId }: { listingId: string }) {
         <div className="flex items-center gap-2.5">
           <Flag size={14} className="text-muted-foreground shrink-0" />
           <div>
-            <p className="text-foreground text-sm font-semibold">Report this listing</p>
-            <p className="text-muted-foreground text-xs mt-0.5">Something wrong? Let us know</p>
+            <p className="text-foreground text-sm font-semibold">
+              Report this listing
+            </p>
+            <p className="text-muted-foreground text-xs mt-0.5">
+              Something wrong? Let us know
+            </p>
           </div>
         </div>
         {expanded ? (
@@ -1117,7 +1123,9 @@ function ReportSection({ listingId }: { listingId: string }) {
       </button>
       {expanded && (
         <div className="px-4 pb-4 space-y-3 pt-4">
-          <p className="text-sm text-muted-foreground">What&apos;s wrong with this listing?</p>
+          <p className="text-sm text-muted-foreground">
+            What&apos;s wrong with this listing?
+          </p>
           <div className="space-y-2">
             {REPORT_REASONS.map((r) => (
               <button
@@ -1144,7 +1152,14 @@ function ReportSection({ listingId }: { listingId: string }) {
             variant="outline"
             className="w-full rounded-xl py-5 text-sm font-bold gap-2"
           >
-            {loading ? <><Loader2 size={15} className="animate-spin" />Submitting...</> : "Submit Report"}
+            {loading ? (
+              <>
+                <Loader2 size={15} className="animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              "Submit Report"
+            )}
           </Button>
         </div>
       )}
@@ -1152,7 +1167,13 @@ function ReportSection({ listingId }: { listingId: string }) {
   );
 }
 
-function OwnerSection({ listingId, onRented }: { listingId: string; onRented: () => void }) {
+function OwnerSection({
+  listingId,
+  onRented,
+}: {
+  listingId: string;
+  onRented: () => void;
+}) {
   const [expanded, setExpanded] = useState(false);
   const [phone, setPhone] = useState("");
   const [pin, setPin] = useState("");
@@ -1179,8 +1200,12 @@ function OwnerSection({ listingId, onRented }: { listingId: string; onRented: ()
     return (
       <div className="bg-emerald-500/10 rounded-2xl p-4 flex flex-col items-center gap-2">
         <span className="text-2xl">✅</span>
-        <p className="text-emerald-600 dark:text-emerald-400 font-semibold text-sm">Listing marked as rented</p>
-        <p className="text-muted-foreground text-xs text-center">It will disappear from the feed shortly.</p>
+        <p className="text-emerald-600 dark:text-emerald-400 font-semibold text-sm">
+          Listing marked as rented
+        </p>
+        <p className="text-muted-foreground text-xs text-center">
+          It will disappear from the feed shortly.
+        </p>
       </div>
     );
   }
@@ -1192,8 +1217,12 @@ function OwnerSection({ listingId, onRented }: { listingId: string; onRented: ()
         className="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-muted/50 transition-colors"
       >
         <div>
-          <p className="text-foreground text-sm font-semibold">This is my listing</p>
-          <p className="text-muted-foreground text-xs mt-0.5">Mark it as rented once it&apos;s taken</p>
+          <p className="text-foreground text-sm font-semibold">
+            This is my listing
+          </p>
+          <p className="text-muted-foreground text-xs mt-0.5">
+            Mark it as rented once it&apos;s taken
+          </p>
         </div>
         {expanded ? (
           <ChevronUp size={16} className="text-muted-foreground shrink-0" />
@@ -1215,7 +1244,9 @@ function OwnerSection({ listingId, onRented }: { listingId: string; onRented: ()
             placeholder="····"
             maxLength={4}
             value={pin}
-            onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+            onChange={(e) =>
+              setPin(e.target.value.replace(/\D/g, "").slice(0, 4))
+            }
             className="rounded-xl bg-muted border-transparent focus:border-border focus-visible:ring-primary tracking-widest text-center text-lg py-5"
           />
           {error && (
@@ -1229,7 +1260,14 @@ function OwnerSection({ listingId, onRented }: { listingId: string; onRented: ()
             variant="destructive"
             className="w-full rounded-xl py-5 text-sm font-bold gap-2"
           >
-            {loading ? <><Loader2 size={15} className="animate-spin" />Verifying...</> : "Mark as Rented"}
+            {loading ? (
+              <>
+                <Loader2 size={15} className="animate-spin" />
+                Verifying...
+              </>
+            ) : (
+              "Mark as Rented"
+            )}
           </Button>
           <p className="text-muted-foreground text-[11px] text-center leading-relaxed">
             This will remove your listing from the feed immediately.
@@ -1262,7 +1300,9 @@ function ListingDetailContent({
         {/* Type | Title + close */}
         <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-2">
           <h2 className="text-foreground font-semibold text-lg leading-snug flex-1">
-            <span className={`font-bold capitalize ${styles.text}`}>{listing.type}</span>
+            <span className={`font-bold capitalize ${styles.text}`}>
+              {listing.type}
+            </span>
             <span className="mx-2 text-muted-foreground/40 font-light">|</span>
             {listing.title}
           </h2>
@@ -1277,8 +1317,14 @@ function ListingDetailContent({
 
         {/* Location */}
         <div className="flex items-center gap-1.5 px-5 pb-4">
-          <MapPin size={13} className="text-orange-400 shrink-0" strokeWidth={2.5} />
-          <p className="text-muted-foreground text-sm">{listing.location_name}</p>
+          <MapPin
+            size={13}
+            className="text-orange-400 shrink-0"
+            strokeWidth={2.5}
+          />
+          <p className="text-muted-foreground text-sm">
+            {listing.location_name}
+          </p>
         </div>
 
         {/* Photo grid */}
@@ -1290,30 +1336,80 @@ function ListingDetailContent({
                 style={{ height: "220px" }}
                 onClick={() => setLightboxIndex(0)}
               >
-                <Image src={listing.photos[0]} alt={listing.title} fill className="object-cover" sizes="560px" priority />
+                <Image
+                  src={listing.photos[0]}
+                  alt={listing.title}
+                  fill
+                  className="object-cover"
+                  sizes="560px"
+                  priority
+                />
               </div>
             ) : listing.photos.length === 2 ? (
-              <div className="grid grid-cols-2 gap-2" style={{ height: "220px" }}>
+              <div
+                className="grid grid-cols-2 gap-2"
+                style={{ height: "220px" }}
+              >
                 {listing.photos.slice(0, 2).map((p, i) => (
-                  <div key={i} className="relative rounded-2xl overflow-hidden cursor-pointer" onClick={() => setLightboxIndex(i)}>
-                    <Image src={p} alt={`Photo ${i + 1}`} fill className="object-cover" sizes="280px" />
+                  <div
+                    key={i}
+                    className="relative rounded-2xl overflow-hidden cursor-pointer"
+                    onClick={() => setLightboxIndex(i)}
+                  >
+                    <Image
+                      src={p}
+                      alt={`Photo ${i + 1}`}
+                      fill
+                      className="object-cover"
+                      sizes="280px"
+                    />
                   </div>
                 ))}
               </div>
             ) : (
               <div className="flex gap-2" style={{ height: "220px" }}>
-                <div className="relative flex-1 rounded-2xl overflow-hidden cursor-pointer" onClick={() => setLightboxIndex(0)}>
-                  <Image src={listing.photos[0]} alt={listing.title} fill className="object-cover" sizes="340px" priority />
+                <div
+                  className="relative flex-1 rounded-2xl overflow-hidden cursor-pointer"
+                  onClick={() => setLightboxIndex(0)}
+                >
+                  <Image
+                    src={listing.photos[0]}
+                    alt={listing.title}
+                    fill
+                    className="object-cover"
+                    sizes="340px"
+                    priority
+                  />
                 </div>
                 <div className="flex flex-col gap-2" style={{ width: "46%" }}>
-                  <div className="relative flex-1 rounded-2xl overflow-hidden cursor-pointer" onClick={() => setLightboxIndex(1)}>
-                    <Image src={listing.photos[1]} alt="Photo 2" fill className="object-cover" sizes="200px" />
+                  <div
+                    className="relative flex-1 rounded-2xl overflow-hidden cursor-pointer"
+                    onClick={() => setLightboxIndex(1)}
+                  >
+                    <Image
+                      src={listing.photos[1]}
+                      alt="Photo 2"
+                      fill
+                      className="object-cover"
+                      sizes="200px"
+                    />
                   </div>
-                  <div className="relative flex-1 rounded-2xl overflow-hidden cursor-pointer" onClick={() => setLightboxIndex(2)}>
-                    <Image src={listing.photos[2]} alt="Photo 3" fill className="object-cover" sizes="200px" />
+                  <div
+                    className="relative flex-1 rounded-2xl overflow-hidden cursor-pointer"
+                    onClick={() => setLightboxIndex(2)}
+                  >
+                    <Image
+                      src={listing.photos[2]}
+                      alt="Photo 3"
+                      fill
+                      className="object-cover"
+                      sizes="200px"
+                    />
                     {listing.photos.length > 3 && (
                       <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-2xl">
-                        <span className="text-white font-bold text-lg">+{listing.photos.length - 3}</span>
+                        <span className="text-white font-bold text-lg">
+                          +{listing.photos.length - 3}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -1332,26 +1428,38 @@ function ListingDetailContent({
           )}
           {listing.photos.length > 0 && (
             <span className="text-muted-foreground text-sm">
-              {listing.photos.length} {listing.photos.length === 1 ? "photo" : "photos"}
+              {listing.photos.length}{" "}
+              {listing.photos.length === 1 ? "photo" : "photos"}
             </span>
           )}
-          <span className={`text-sm font-semibold capitalize ${styles.text}`}>{listing.type}</span>
+          <span className={`text-sm font-semibold capitalize ${styles.text}`}>
+            {listing.type}
+          </span>
         </div>
 
         {/* Description */}
         {listing.description && (
           <div className="px-5 pb-4">
-            <p className="text-foreground text-sm font-semibold mb-1.5">About this space</p>
-            <p className="text-muted-foreground text-sm leading-relaxed">{listing.description}</p>
+            <p className="text-foreground text-sm font-semibold mb-1.5">
+              About this space
+            </p>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              {listing.description}
+            </p>
           </div>
         )}
 
         {/* Flagged warning */}
         {listing.status === "flagged" && (
           <div className="mx-5 mb-4 bg-red-500/10 rounded-xl p-3 flex gap-2.5">
-            <AlertTriangle size={15} className="text-red-500 shrink-0 mt-0.5" strokeWidth={2.5} />
+            <AlertTriangle
+              size={15}
+              className="text-red-500 shrink-0 mt-0.5"
+              strokeWidth={2.5}
+            />
             <p className="text-red-600 dark:text-red-400 text-xs leading-relaxed">
-              This listing has been flagged by multiple users and is under review. Proceed with caution.
+              This listing has been flagged by multiple users and is under
+              review. Proceed with caution.
             </p>
           </div>
         )}
@@ -1360,7 +1468,8 @@ function ListingDetailContent({
         <div className="mx-5 mb-4 bg-amber-500/10 rounded-xl p-3 flex gap-2.5">
           <span className="text-base shrink-0">⚠️</span>
           <p className="text-amber-600 dark:text-amber-400 text-xs leading-relaxed">
-            Always visit this space in person before making any payments to anyone.
+            Always visit this space in person before making any payments to
+            anyone.
           </p>
         </div>
 
@@ -1385,9 +1494,14 @@ function ListingDetailContent({
 
       {/* Lightbox */}
       {lightboxIndex !== null && (
-        <div className="absolute inset-0 z-50 bg-black flex flex-col" style={{ borderRadius: "inherit" }}>
+        <div
+          className="absolute inset-0 z-50 bg-black flex flex-col"
+          style={{ borderRadius: "inherit" }}
+        >
           <div className="flex items-center justify-between px-4 py-3 shrink-0">
-            <span className="text-white/60 text-sm">{lightboxIndex + 1} / {listing.photos.length}</span>
+            <span className="text-white/60 text-sm">
+              {lightboxIndex + 1} / {listing.photos.length}
+            </span>
             <button
               onClick={() => setLightboxIndex(null)}
               className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center"
@@ -1397,18 +1511,35 @@ function ListingDetailContent({
             </button>
           </div>
           <div className="flex-1 relative px-4">
-            <Image src={listing.photos[lightboxIndex]} alt={`Photo ${lightboxIndex + 1}`} fill className="object-contain" sizes="100vw" />
+            <Image
+              src={listing.photos[lightboxIndex]}
+              alt={`Photo ${lightboxIndex + 1}`}
+              fill
+              className="object-contain"
+              sizes="100vw"
+            />
           </div>
-          <div className="flex gap-2 px-4 py-3 overflow-x-auto shrink-0" style={{ scrollbarWidth: "none" }}>
+          <div
+            className="flex gap-2 px-4 py-3 overflow-x-auto shrink-0"
+            style={{ scrollbarWidth: "none" }}
+          >
             {listing.photos.map((p, i) => (
               <div
                 key={i}
                 onClick={() => setLightboxIndex(i)}
                 className={`relative shrink-0 w-16 h-12 rounded-lg overflow-hidden cursor-pointer transition-all ${
-                  i === lightboxIndex ? "ring-2 ring-white ring-offset-1 ring-offset-black" : "opacity-40 hover:opacity-70"
+                  i === lightboxIndex
+                    ? "ring-2 ring-white ring-offset-1 ring-offset-black"
+                    : "opacity-40 hover:opacity-70"
                 }`}
               >
-                <Image src={p} alt={`Thumb ${i + 1}`} fill className="object-cover" sizes="64px" />
+                <Image
+                  src={p}
+                  alt={`Thumb ${i + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="64px"
+                />
               </div>
             ))}
           </div>
@@ -1434,25 +1565,43 @@ function CompactCard({
 
   return (
     <div
-      onClick={() => router.push(`/listing/${(listing as any).slug ?? listing.id}`)}
+      onClick={() =>
+        router.push(`/listing/${(listing as any).slug ?? listing.id}`)
+      }
       className="flex-shrink-0 w-44 sm:w-48 md:w-56 cursor-pointer"
     >
       <div className="relative overflow-hidden rounded-xl bg-muted aspect-square">
         {photo ? (
-          <Image src={photo} alt={listing.title} fill className="object-cover" sizes="200px" draggable={false} />
+          <Image
+            src={photo}
+            alt={listing.title}
+            fill
+            className="object-cover"
+            sizes="200px"
+            draggable={false}
+          />
         ) : (
-          <div className="flex h-full items-center justify-center text-4xl text-muted-foreground/20">🏠</div>
+          <div className="flex h-full items-center justify-center text-4xl text-muted-foreground/20">
+            🏠
+          </div>
         )}
         <button
           type="button"
-          onClick={(e) => { e.stopPropagation(); toggleSave(listing.id); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleSave(listing.id);
+          }}
           className="absolute top-2 right-2 z-10 h-9 w-9 flex items-center justify-center"
           aria-label="Save listing"
         >
           <Heart
             size={24}
             strokeWidth={1.5}
-            className={isSaved ? "fill-emerald-500 text-emerald-500" : "fill-black/40 text-white"}
+            className={
+              isSaved
+                ? "fill-emerald-500 text-emerald-500"
+                : "fill-black/40 text-white"
+            }
           />
         </button>
       </div>
@@ -1460,10 +1609,13 @@ function CompactCard({
         <p className="text-[11px] uppercase tracking-wide text-muted-foreground line-clamp-1">
           {listing.location_name}
         </p>
-        <h4 className="text-sm font-semibold text-foreground mt-1 line-clamp-2">
-          <span className={`font-bold capitalize ${styles.text}`}>{listing.type}</span>
+        <h4 className="min-w-0 text-sm font-semibold text-foreground mt-1 line-clamp-2">
+          <span className={`font-bold capitalize ${styles.text}`}>
+            {listing.type}
+          </span>
           <span className={`mx-1 ${styles.text} opacity-50`}>|</span>
           {listing.title}
+          <span className="text-xs text-muted-foreground font-normal"></span>
         </h4>
         <p className="text-xs text-muted-foreground font-normal mt-1">
           UGX {listing.price.toLocaleString()}
@@ -1489,7 +1641,10 @@ function FeedTabs({
       {(["foryou", "nearby", "saved"] as const).map((tab) => (
         <button
           key={tab}
-          onClick={(e) => { e.stopPropagation(); setActiveTab(tab); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setActiveTab(tab);
+          }}
           className={`relative pb-1 text-sm font-semibold transition-all duration-200 ${
             activeTab === tab
               ? "text-foreground"
@@ -1526,8 +1681,7 @@ function MobileListingCard({
   const slug = (listing as any).slug ?? listing.id;
 
   return (
-    <div className="mx-4 mb-5 rounded-3xl overflow-hidden bg-muted/40">
-
+    <div className="mx-4 mb-5 rounded-3xl overflow-hidden bg-muted/55">
       {/* Photo — tap navigates to listing page */}
       <div
         className="relative w-full cursor-pointer"
@@ -1535,7 +1689,14 @@ function MobileListingCard({
         onClick={() => router.push(`/listing/${slug}`)}
       >
         {photo ? (
-          <Image src={photo} alt={listing.title} fill className="object-cover" sizes="100vw" priority />
+          <Image
+            src={photo}
+            alt={listing.title}
+            fill
+            className="object-cover"
+            sizes="100vw"
+            priority
+          />
         ) : (
           <div className="w-full h-full bg-muted flex items-center justify-center">
             <span className="text-6xl opacity-20">🏠</span>
@@ -1544,14 +1705,21 @@ function MobileListingCard({
 
         {/* Save button — stopPropagation so it doesn't navigate */}
         <button
-          onClick={(e) => { e.stopPropagation(); toggleSave(listing.id); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleSave(listing.id);
+          }}
           className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center"
           aria-label="Save listing"
         >
           <Heart
             size={18}
             strokeWidth={1.5}
-            className={isSaved ? "fill-emerald-500 text-emerald-500" : "fill-white/30 text-white"}
+            className={
+              isSaved
+                ? "fill-emerald-500 text-emerald-500"
+                : "fill-white/30 text-white"
+            }
           />
         </button>
 
@@ -1559,7 +1727,9 @@ function MobileListingCard({
         {distanceBadge && (
           <div className="absolute top-3 left-3 z-10 flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-sm">
             <Navigation size={10} className="text-white" strokeWidth={2.5} />
-            <span className="text-white text-[11px] font-semibold">{distanceBadge}</span>
+            <span className="text-white text-[11px] font-semibold">
+              {distanceBadge}
+            </span>
           </div>
         )}
 
@@ -1567,7 +1737,9 @@ function MobileListingCard({
         {listing.status === "flagged" && (
           <div className="absolute top-3 left-3 z-10 flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/80 backdrop-blur-sm">
             <AlertTriangle size={10} className="text-white" strokeWidth={2.5} />
-            <span className="text-white text-[11px] font-semibold">Under review</span>
+            <span className="text-white text-[11px] font-semibold">
+              Under review
+            </span>
           </div>
         )}
 
@@ -1578,7 +1750,10 @@ function MobileListingCard({
               <button
                 key={i}
                 type="button"
-                onClick={(e) => { e.stopPropagation(); setPhotoIdx(i); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPhotoIdx(i);
+                }}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
                   i === photoIdx ? "w-5 bg-white" : "w-1.5 bg-white/40"
                 }`}
@@ -1590,30 +1765,40 @@ function MobileListingCard({
 
       {/* Info */}
       <div className="px-4 pt-3 pb-4">
-
-        {/* Location */}
-        <div className="flex items-center gap-1 mb-2">
-          <MapPin size={12} className="text-orange-400 shrink-0" strokeWidth={2.5} />
-          <span className="text-muted-foreground text-xs">{listing.location_name}</span>
-        </div>
-
-        {/* Title row — ⓘ icon navigates to listing page */}
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <h3 className="text-foreground font-semibold text-[15px] leading-snug flex-1">
-            <span className={`font-bold capitalize ${styles.text}`}>{listing.type}</span>
-            <span className={`mx-1 ${styles.text} opacity-50`}>|</span>
-            {listing.title}
-          </h3>
+        {/* Header: Title/Location on left, Info icon on right */}
+        <div className="flex justify-between gap-2 mb-2 items-start">
+          {/* Left: Title and Location together */}
+          <div className="flex flex-col flex-1 min-w-0">
+            <h3 className="text-foreground font-semibold text-[15px] leading-snug">
+              <span className={`font-bold capitalize ${styles.text}`}>
+                {listing.type}
+              </span>
+              <span className={`mx-1 ${styles.text} opacity-50`}>|</span>
+              {listing.title}
+            </h3>
+            {/* Location */}
+            <div className="flex items-center gap-1 mt-0.5">
+              <MapPin
+                size={12}
+                className="text-orange-400 shrink-0"
+                strokeWidth={2.5}
+              />
+              <span className="text-muted-foreground text-xs">
+                {listing.location_name}
+              </span>
+            </div>
+          </div>
+          {/* Right: Info icon */}
           <button
             onClick={() => router.push(`/listing/${slug}`)}
-            className="shrink-0 mt-0.5 w-7 h-7 rounded-full bg-muted flex items-center justify-center"
+            className="shrink-0 flex items-center justify-center"
             aria-label="View details"
           >
-            <Info size={15} className="text-muted-foreground" />
+            <Info size={18} className="text-muted-foreground" />
           </button>
         </div>
 
-        {/* Meta chips + price */}
+        {/* Meta chips */}
         <div className="flex items-center gap-2 mb-3">
           {listing.rooms && (
             <span className="bg-muted text-muted-foreground text-xs px-3 py-1.5 rounded-lg font-medium shrink-0">
@@ -1622,15 +1807,18 @@ function MobileListingCard({
           )}
           {listing.photos.length > 0 && (
             <span className="bg-muted text-muted-foreground text-xs px-3 py-1.5 rounded-lg font-medium shrink-0">
-              {listing.photos.length} {listing.photos.length === 1 ? "photo" : "photos"}
+              {listing.photos.length}{" "}
+              {listing.photos.length === 1 ? "photo" : "photos"}
             </span>
           )}
-          <div className="flex-1 text-right">
-            <span className="text-foreground font-bold text-sm">
-              UGX {listing.price.toLocaleString()}
-            </span>
-            <span className="text-muted-foreground text-xs">/mo</span>
-          </div>
+        </div>
+
+        {/* Price */}
+        <div className="flex justify-between items-center mb-3">
+          <span className="text-foreground font-semibold text-sm">Price</span>
+          <span className="text-foreground font-bold text-sm">
+            UGX {listing.price.toLocaleString()}/Month
+          </span>
         </div>
 
         {/* Description */}
@@ -1694,7 +1882,11 @@ export default function Feed() {
         <FeedTabs activeTab={activeTab} setActiveTab={setActiveTab} />
         <div className="flex-1 flex flex-col items-center justify-center gap-4">
           <p className="text-4xl">
-            {activeTab === "saved" ? "🤍" : activeTab === "nearby" ? "📍" : "🏠"}
+            {activeTab === "saved"
+              ? "🤍"
+              : activeTab === "nearby"
+                ? "📍"
+                : "🏠"}
           </p>
           <p className="text-foreground font-semibold">
             {activeTab === "saved"
@@ -1741,9 +1933,11 @@ export default function Feed() {
                 const items = filteredListings.filter((l) => l.type === t);
                 if (items.length === 0) return null;
                 const title =
-                  t === "house" ? "Available Houses"
-                  : t === "office" ? "Available Offices"
-                  : "Available Shops";
+                  t === "house"
+                    ? "Available Houses"
+                    : t === "office"
+                      ? "Available Offices"
+                      : "Available Shops";
                 return (
                   <section key={t} className="px-2">
                     <h3 className="mb-3 text-sm md:text-[22px] font-semibold text-foreground px-2">
@@ -1773,7 +1967,11 @@ export default function Feed() {
         <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
           <DialogContent
             className="rounded-[2rem] overflow-hidden p-0 shadow-2xl"
-            style={{ width: "min(780px, 95vw)", maxHeight: "90vh", overflowX: "hidden" }}
+            style={{
+              width: "min(780px, 95vw)",
+              maxHeight: "90vh",
+              overflowX: "hidden",
+            }}
           >
             <DialogTitle className="sr-only">{listing?.title}</DialogTitle>
             {listing && (
@@ -1819,7 +2017,10 @@ export default function Feed() {
             item.latitude !== null &&
             item.longitude !== null
               ? formatDistance(
-                  haversine(userLocation, { lat: item.latitude, lng: item.longitude }),
+                  haversine(userLocation, {
+                    lat: item.latitude,
+                    lng: item.longitude,
+                  }),
                 )
               : null;
 

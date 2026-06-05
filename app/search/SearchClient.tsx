@@ -1,19 +1,18 @@
 // app/search/SearchClient.tsx
 "use client";
 
-import { useMemo, useState } from "react";
-import { Search, ArrowLeft, MapPin } from "lucide-react";
-import { useRouter } from "next/navigation";
+import BottomNavMobile from "@/app/_components/BottomNavMobile";
+import type { Listing } from "@/app/actions/listings";
 import { useFeed } from "@/app/providers/feed-provider";
 import {
   filterListings,
   groupResultsByLocation,
   POPULAR_SEARCHES,
 } from "@/lib/search/listings-search";
+import { ArrowLeft, Heart, Search } from "lucide-react";
 import Image from "next/image";
-import { Heart } from "lucide-react";
-import BottomNavMobile from "@/app/_components/BottomNavMobile";
-import type { Listing } from "@/app/actions/listings";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 
 export default function SearchClient() {
   const router = useRouter();
@@ -30,7 +29,6 @@ export default function SearchClient() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-
       {/* ── Sticky header ── */}
       <div className="sticky top-0 z-30 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="flex items-center gap-3 px-4 py-3">
@@ -85,7 +83,6 @@ export default function SearchClient() {
       {/* ── Results ── */}
       {query.trim() && (
         <div className="pb-32">
-
           {/* Total count */}
           <div className="px-4 pt-3 pb-1">
             <p className="text-xs text-muted-foreground">
@@ -105,7 +102,6 @@ export default function SearchClient() {
           {/* Location groups */}
           {groups.map(({ location, items }) => (
             <section key={location} className="mt-6">
-
               {/* Section header */}
               <div className="px-4 mb-3 flex items-center gap-2">
                 {/* <MapPin size={13} className="text-orange-400 shrink-0" strokeWidth={2.5} /> */}
@@ -178,7 +174,10 @@ function ListingCard({
         {/* Save heart */}
         <button
           type="button"
-          onClick={(e) => { e.stopPropagation(); onSave(); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onSave();
+          }}
           className="absolute top-2 right-2 z-10 h-9 w-9 flex items-center justify-center"
           aria-label="Save listing"
         >
@@ -196,13 +195,13 @@ function ListingCard({
 
       {/* Text */}
       <div className="mt-2">
-        <p className="text-[11px] uppercase tracking-wide text-muted-foreground line-clamp-1">
-          {listing.location_name}
-        </p>
-        <h4 className="text-sm font-semibold text-foreground mt-1 line-clamp-2">
+        <h4 className="text-sm font-semibold text-foreground line-clamp-2">
           {listing.title}
         </h4>
-        <p className="text-xs text-muted-foreground font-normal mt-1">
+        <p className="text-[11px] uppercase tracking-wide text-muted-foreground mt-1 line-clamp-1">
+          {listing.location_name}
+        </p>
+        <p className="text-xs text-muted-foreground font-normal mt-2">
           UGX {listing.price.toLocaleString()}
         </p>
       </div>
