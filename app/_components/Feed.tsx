@@ -1016,6 +1016,7 @@ import {
   MapPin,
   Navigation,
   Phone,
+  Star,
   X,
 } from "lucide-react";
 import Image from "next/image";
@@ -1614,13 +1615,20 @@ function CompactCard({
           <span className={`font-bold capitalize ${styles.text}`}>
             {listing.type}
           </span>
+
           <span className={`mx-1 ${styles.text} opacity-50`}>|</span>
-          {listing.title}
-          <span className="text-xs text-muted-foreground font-normal"></span>
+
+          <span className="text-xs text-muted-foreground font-normal">
+            {listing.title}
+          </span>
+
+          <span className="block mt-1">
+            <span className="inline-flex items-center gap-1 whitespace-nowrap text-xs text-muted-foreground font-normal">
+              <Star className={`h-3 w-3 fill-current ${styles.text}`} />
+              UGX {listing.price.toLocaleString()}
+            </span>
+          </span>
         </h4>
-        <p className="text-xs text-muted-foreground font-normal mt-1">
-          UGX {listing.price.toLocaleString()}
-        </p>
       </div>
     </div>
   );
