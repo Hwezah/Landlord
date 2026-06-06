@@ -38,24 +38,31 @@ export async function postListing(input: PostListingInput) {
 
   const slug = generateSlug(input.title);
 
+  const session = await supabase.auth.getSession();
+
+  const listingInsert = {
+    type: input.type,
+    title: input.title,
+    description: input.description,
+    price: input.price,
+    location_name: input.location_name,
+    room_type: input.room_type,
+    shop_type: input.shop_type,
+    price_type: input.price_type,
+    amenities: input.amenities,
+    phone_number: input.phone_number,
+    pin: input.pin,
+    photos: input.photos,
+    status: "available",
+    slug,
+    ...(session.data.session?.user.id
+      ? { user_id: session.data.session.user.id }
+      : {}),
+  };
+
   const { data, error } = await supabase
     .from("listings")
-    .insert({
-      type: input.type,
-      title: input.title,
-      description: input.description,
-      price: input.price,
-      location_name: input.location_name,
-      room_type: input.room_type,
-      shop_type: input.shop_type,
-      price_type: input.price_type,
-      amenities: input.amenities,
-      phone_number: input.phone_number,
-      pin: input.pin,
-      photos: input.photos,
-      status: "available",
-      slug,
-    })
+    .insert(listingInsert)
     .select("id, slug")
     .single();
 

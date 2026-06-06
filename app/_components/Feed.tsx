@@ -999,6 +999,7 @@
 "use client";
 import type { Listing } from "@/app/actions/listings";
 import { markAsRented, submitReport } from "@/app/actions/post-listing";
+import { useAuth } from "@/app/providers/auth-provider";
 import { useFeed } from "@/app/providers/feed-provider";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -1018,8 +1019,8 @@ import {
   X,
 } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 const typeStyles = {
   house: { text: "text-emerald-400" },
@@ -1258,7 +1259,7 @@ function OwnerSection({
             onClick={handleVerify}
             disabled={loading}
             variant="destructive"
-            className="w-full rounded-xl py-5 text-sm font-bold gap-2"
+            className="w-full rounded-xl py-5 text-sm font-medium gap-2"
           >
             {loading ? (
               <>
@@ -1625,6 +1626,50 @@ function CompactCard({
   );
 }
 
+function PostedListingsSection({
+  listings,
+  savedIds,
+  toggleSave,
+}: {
+  listings: Listing[];
+  savedIds: Set<string>;
+  toggleSave: (id: string) => Promise<void>;
+}) {
+  if (listings.length === 0) {
+    return (
+      <section className="px-4 pb-4">
+        <div className="rounded-3xl border border-border bg-muted/70 px-4 py-6 text-sm text-muted-foreground">
+          You haven't posted any listings yet. Post a listing while logged in to
+          see it here.
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="px-2">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="text-sm md:text-[22px] font-semibold text-foreground">
+          Your Posted Listings
+        </h3>
+        <span className="text-sm text-muted-foreground">
+          {listings.length} {listings.length === 1 ? "listing" : "listings"}
+        </span>
+      </div>
+      <div className="-mx-2 flex gap-3 overflow-x-auto px-2 pb-4">
+        {listings.map((item) => (
+          <CompactCard
+            key={item.id}
+            listing={item}
+            isSaved={savedIds.has(item.id)}
+            toggleSave={toggleSave}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 // ── Tabs ───────────────────────────────────────────────────────────────────
 function FeedTabs({
   activeTab,
@@ -1844,6 +1889,7 @@ function MobileListingCard({
 // ── Main Feed ──────────────────────────────────────────────────────────────
 export default function Feed() {
   const {
+    listings,
     filteredListings,
     currentIndex,
     setCurrentIndex,
@@ -1861,19 +1907,61 @@ export default function Feed() {
   } = useFeed();
 
   const isMobile = useIsMobile();
+  const searchParams = useSearchParams();
+  const { user } = useAuth();
+  const view = searchParams.get("view");
+  const isMyListingsView = view === "myListings";
 
-  const listing = filteredListings[currentIndex];
+  const myPostedListings = useMemo(
+    () =>
+      user ? listings.filter((listing) => listing.user_id === user.id) : [],
+    [listings, user?.id],
+  );
+
+  const postedListingIds = useMemo(
+    () => new Set(myPostedListings.map((listing) => listing.id)),
+    [myPostedListings],
+  );
+
+  const normalListings = useMemo(
+    () =>
+      isMyListingsView
+        ? filteredListings.filter(
+            (listing) => !postedListingIds.has(listing.id),
+          )
+        : filteredListings,
+    [filteredListings, isMyListingsView, postedListingIds],
+  );
+
+  const listing = normalListings[currentIndex];
+  const [syncedView, setSyncedView] = useState<string | null>(null);
 
   useEffect(() => {
     setCurrentPhoto(0);
   }, [currentIndex, setCurrentPhoto]);
+
+  useEffect(() => {
+    if (!view || view === syncedView) return;
+    if (view === "saved") {
+      setActiveTab("saved");
+    } else if (view === "myListings") {
+      setActiveTab("foryou");
+    }
+    setSyncedView(view);
+  }, [view, syncedView, setActiveTab]);
+
+  useEffect(() => {
+    if (currentIndex >= normalListings.length) {
+      setCurrentIndex(0);
+    }
+  }, [currentIndex, normalListings.length, setCurrentIndex]);
 
   function handleRented() {
     setDetailOpen(false);
   }
 
   // ── Empty state ──────────────────────────────────────────────────────────
-  if (filteredListings.length === 0) {
+  if (normalListings.length === 0 && !isMyListingsView) {
     return (
       <div
         className="relative w-full flex-1 flex flex-col bg-background"
@@ -1929,8 +2017,15 @@ export default function Feed() {
               Browse listings — click any card to open the full listing page.
             </p>
             <div className="mt-8 space-y-8">
+              {isMyListingsView && (
+                <PostedListingsSection
+                  listings={myPostedListings}
+                  savedIds={savedIds}
+                  toggleSave={toggleSave}
+                />
+              )}
               {(["house", "office", "shop"] as const).map((t) => {
-                const items = filteredListings.filter((l) => l.type === t);
+                const items = normalListings.filter((l) => l.type === t);
                 if (items.length === 0) return null;
                 const title =
                   t === "house"
@@ -2010,7 +2105,14 @@ export default function Feed() {
         className="h-full overflow-y-auto pb-32 pt-1"
         style={{ scrollbarWidth: "none" }}
       >
-        {filteredListings.map((item) => {
+        {isMyListingsView && (
+          <PostedListingsSection
+            listings={myPostedListings}
+            savedIds={savedIds}
+            toggleSave={toggleSave}
+          />
+        )}
+        {normalListings.map((item) => {
           const itemDistance =
             activeTab === "nearby" &&
             userLocation !== null &&

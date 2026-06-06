@@ -22,12 +22,13 @@ export type Listing = {
   photos: string[];
   status: string;
   created_at: string;
+  user_id?: string | null;
 };
 
 const LISTING_SELECT = `
   id, slug, type, title, description, price, location_name,
   latitude, longitude, rooms, room_type, shop_type, price_type,
-  amenities, phone_number, photos, status, created_at
+  amenities, phone_number, photos, status, created_at, user_id
 `;
 
 export async function getListings(): Promise<Listing[]> {

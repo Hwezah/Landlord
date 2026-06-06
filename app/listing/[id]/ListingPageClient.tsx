@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { Listing } from "@/app/actions/listings";
@@ -83,14 +82,20 @@ function Lightbox({
       {photos.length > 1 && (
         <>
           <button
-            onClick={(e) => { e.stopPropagation(); prev(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              prev();
+            }}
             className="absolute left-4 top-1/2 -translate-y-1/2 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 transition-colors text-xl"
             aria-label="Previous photo"
           >
             ‹
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); next(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              next();
+            }}
             className="absolute right-4 top-1/2 -translate-y-1/2 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 transition-colors text-xl"
             aria-label="Next photo"
           >
@@ -118,9 +123,14 @@ function Lightbox({
           {photos.map((_, i) => (
             <button
               key={i}
-              onClick={(e) => { e.stopPropagation(); setIdx(i); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIdx(i);
+              }}
               className={`h-1.5 rounded-full transition-all duration-300 ${
-                i === idx ? "w-6 bg-white" : "w-1.5 bg-white/35 hover:bg-white/55"
+                i === idx
+                  ? "w-6 bg-white"
+                  : "w-1.5 bg-white/35 hover:bg-white/55"
               }`}
             />
           ))}
@@ -176,7 +186,10 @@ function PhotoCollage({
     <div className="w-full overflow-hidden rounded-2xl">
       <div
         className="grid gap-1.5"
-        style={{ gridTemplateColumns: "1fr 1fr", height: "clamp(280px, 45vw, 520px)" }}
+        style={{
+          gridTemplateColumns: "1fr 1fr",
+          height: "clamp(280px, 45vw, 520px)",
+        }}
       >
         <div
           className="relative overflow-hidden rounded-l-2xl cursor-pointer"
@@ -195,7 +208,10 @@ function PhotoCollage({
         <div
           className="grid gap-1.5"
           style={{
-            gridTemplateRows: rightSlots.length <= 2 ? `repeat(${rightSlots.length}, 1fr)` : "1fr 1fr",
+            gridTemplateRows:
+              rightSlots.length <= 2
+                ? `repeat(${rightSlots.length}, 1fr)`
+                : "1fr 1fr",
             gridTemplateColumns: rightSlots.length >= 3 ? "1fr 1fr" : "1fr",
           }}
         >
@@ -208,7 +224,9 @@ function PhotoCollage({
               isFirstRight && rightSlots.length === 1 ? "rounded-r-2xl" : "",
               isFirstRight && rightSlots.length > 1 ? "rounded-tr-2xl" : "",
               isLastRight && rightSlots.length > 1 ? "rounded-br-2xl" : "",
-            ].filter(Boolean).join(" ");
+            ]
+              .filter(Boolean)
+              .join(" ");
 
             return (
               <div
@@ -282,7 +300,9 @@ function ReportSection({ listingId }: { listingId: string }) {
 
   if (done) {
     return (
-      <div className={`rounded-2xl p-4 flex flex-col items-center gap-2 ${wasFlagged ? "bg-red-500/10" : "bg-muted/50"}`}>
+      <div
+        className={`rounded-2xl p-4 flex flex-col items-center gap-2 ${wasFlagged ? "bg-red-500/10" : "bg-muted/50"}`}
+      >
         <span className="text-2xl">{wasFlagged ? "🚩" : "🙏"}</span>
         <p className="text-foreground font-semibold text-sm">
           {wasFlagged ? "Listing has been flagged" : "Report submitted"}
@@ -305,19 +325,26 @@ function ReportSection({ listingId }: { listingId: string }) {
         <div className="flex items-center gap-2.5">
           <Flag size={14} className="text-muted-foreground shrink-0" />
           <div>
-            <p className="text-foreground text-sm font-semibold">Report this listing</p>
-            <p className="text-muted-foreground text-xs mt-0.5">Something wrong? Let us know</p>
+            <p className="text-foreground text-sm font-semibold">
+              Report this listing
+            </p>
+            <p className="text-muted-foreground text-xs mt-0.5">
+              Something wrong? Let us know
+            </p>
           </div>
         </div>
-        {expanded
-          ? <ChevronUp size={16} className="text-muted-foreground shrink-0" />
-          : <ChevronDown size={16} className="text-muted-foreground shrink-0" />
-        }
+        {expanded ? (
+          <ChevronUp size={16} className="text-muted-foreground shrink-0" />
+        ) : (
+          <ChevronDown size={16} className="text-muted-foreground shrink-0" />
+        )}
       </button>
 
       {expanded && (
         <div className="px-4 pb-4 space-y-3 pt-1">
-          <p className="text-sm text-muted-foreground">What&apos;s wrong with this listing?</p>
+          <p className="text-sm text-muted-foreground">
+            What&apos;s wrong with this listing?
+          </p>
           <div className="space-y-2">
             {REPORT_REASONS.map((r) => (
               <button
@@ -344,10 +371,13 @@ function ReportSection({ listingId }: { listingId: string }) {
             variant="outline"
             className="w-full rounded-xl py-5 text-sm font-bold gap-2"
           >
-            {loading
-              ? <><Loader2 size={15} className="animate-spin" /> Submitting...</>
-              : "Submit Report"
-            }
+            {loading ? (
+              <>
+                <Loader2 size={15} className="animate-spin" /> Submitting...
+              </>
+            ) : (
+              "Submit Report"
+            )}
           </Button>
         </div>
       )}
@@ -408,13 +438,18 @@ function OwnerSection({
         className="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-muted/80 transition-colors rounded-2xl"
       >
         <div>
-          <p className="text-foreground text-sm font-semibold">This is my listing</p>
-          <p className="text-muted-foreground text-xs mt-0.5">Mark it as rented once it&apos;s taken</p>
+          <p className="text-foreground text-sm font-semibold">
+            This is my listing
+          </p>
+          <p className="text-muted-foreground text-xs mt-0.5">
+            Mark it as rented once it&apos;s taken
+          </p>
         </div>
-        {expanded
-          ? <ChevronUp size={16} className="text-muted-foreground shrink-0" />
-          : <ChevronDown size={16} className="text-muted-foreground shrink-0" />
-        }
+        {expanded ? (
+          <ChevronUp size={16} className="text-muted-foreground shrink-0" />
+        ) : (
+          <ChevronDown size={16} className="text-muted-foreground shrink-0" />
+        )}
       </button>
 
       {expanded && (
@@ -426,12 +461,17 @@ function OwnerSection({
             onChange={(e) => setPhone(e.target.value)}
             className="rounded-xl bg-background/60 border-transparent focus:border-border focus-visible:ring-primary py-5"
           />
+          <p className="text-sm font-medium text-foreground">
+            Please provide the PIN you used to create this listing.
+          </p>
           <Input
             type="password"
             placeholder="····"
             maxLength={4}
             value={pin}
-            onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+            onChange={(e) =>
+              setPin(e.target.value.replace(/\D/g, "").slice(0, 4))
+            }
             className="rounded-xl bg-background/60 border-transparent focus:border-border focus-visible:ring-primary tracking-widest text-center text-lg py-5"
           />
           {error && (
@@ -443,12 +483,15 @@ function OwnerSection({
             onClick={handleVerify}
             disabled={loading}
             variant="destructive"
-            className="w-full rounded-xl py-5 text-sm font-bold gap-2"
+            className="w-full rounded-xl py-5 text-sm font-medium gap-2"
           >
-            {loading
-              ? <><Loader2 size={15} className="animate-spin" /> Verifying...</>
-              : "Mark as Rented"
-            }
+            {loading ? (
+              <>
+                <Loader2 size={15} className="animate-spin" /> Verifying...
+              </>
+            ) : (
+              "Mark as Rented"
+            )}
           </Button>
           <p className="text-muted-foreground text-[11px] text-center leading-relaxed">
             This will remove your listing from the feed immediately.
@@ -471,26 +514,36 @@ export default function ListingPageClient({ listing }: { listing: Listing }) {
 
   return (
     <main className="mx-auto max-w-5xl px-4 sm:px-6 py-8 pb-24">
-
       {/* ── Title row ── */}
       <div className="mb-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl sm:text-3xl font-semibold text-foreground leading-snug">
-              <span className={`font-bold capitalize ${styles.text}`}>{listing.type}</span>
-              <span className={`mx-1 ${styles.text} opacity-60`}> |</span>
-              {" "}{listing.title}
+              <span className={`font-bold capitalize ${styles.text}`}>
+                {listing.type}
+              </span>
+              <span className={`mx-1 ${styles.text} opacity-60`}> |</span>{" "}
+              {listing.title}
             </h1>
             <div className="flex items-center gap-1.5 mt-2">
-              <MapPin size={14} className="text-orange-400 shrink-0" strokeWidth={2.5} />
-              <span className="text-muted-foreground text-sm">{listing.location_name}</span>
+              <MapPin
+                size={14}
+                className="text-orange-400 shrink-0"
+                strokeWidth={2.5}
+              />
+              <span className="text-muted-foreground text-sm">
+                {listing.location_name}
+              </span>
             </div>
           </div>
         </div>
       </div>
 
       {/* ── Photo collage ── */}
-      <PhotoCollage photos={listing.photos} onOpen={(i) => setLightboxIndex(i)} />
+      <PhotoCollage
+        photos={listing.photos}
+        onOpen={(i) => setLightboxIndex(i)}
+      />
 
       {lightboxIndex !== null && (
         <Lightbox
@@ -502,16 +555,19 @@ export default function ListingPageClient({ listing }: { listing: Listing }) {
 
       {/* ── Two-column layout ── */}
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-12">
-
         {/* ── LEFT COLUMN ── */}
         <div className="space-y-7">
-
           {/* Flagged warning */}
           {isFlagged && (
             <div className="bg-red-500/10 rounded-2xl p-4 flex gap-3">
-              <AlertTriangle size={16} className="text-red-500 shrink-0 mt-0.5" strokeWidth={2.5} />
+              <AlertTriangle
+                size={16}
+                className="text-red-500 shrink-0 mt-0.5"
+                strokeWidth={2.5}
+              />
               <p className="text-red-600 dark:text-red-400 text-sm leading-relaxed">
-                This listing has been flagged by multiple users and is under review. Proceed with caution.
+                This listing has been flagged by multiple users and is under
+                review. Proceed with caution.
               </p>
             </div>
           )}
@@ -537,7 +593,8 @@ export default function ListingPageClient({ listing }: { listing: Listing }) {
               </>
             )}
             <span className="text-foreground text-sm font-medium">
-              {listing.photos.length} {listing.photos.length === 1 ? "photo" : "photos"}
+              {listing.photos.length}{" "}
+              {listing.photos.length === 1 ? "photo" : "photos"}
             </span>
             <span className="text-muted-foreground/40 text-sm">·</span>
             <span className={`text-sm font-medium capitalize ${styles.text}`}>
@@ -550,11 +607,17 @@ export default function ListingPageClient({ listing }: { listing: Listing }) {
           {/* Description */}
           {listing.description ? (
             <div>
-              <h2 className="text-base font-semibold text-foreground mb-3">About this space</h2>
-              <p className="text-muted-foreground text-sm leading-7">{listing.description}</p>
+              <h2 className="text-base font-semibold text-foreground mb-3">
+                About this space
+              </h2>
+              <p className="text-muted-foreground text-sm leading-7">
+                {listing.description}
+              </p>
             </div>
           ) : (
-            <p className="text-muted-foreground text-sm italic">No description provided.</p>
+            <p className="text-muted-foreground text-sm italic">
+              No description provided.
+            </p>
           )}
 
           <div className="border-b border-border" />
@@ -563,13 +626,17 @@ export default function ListingPageClient({ listing }: { listing: Listing }) {
           <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex gap-3">
             <span className="text-base shrink-0">⚠️</span>
             <p className="text-amber-600 dark:text-amber-400 text-sm leading-relaxed">
-              Always visit this space in person before making any payments to anyone.
+              Always visit this space in person before making any payments to
+              anyone.
             </p>
           </div>
 
           {/* Owner + Report — mobile only */}
           <div className="space-y-3 lg:hidden">
-            <OwnerSection listingId={listing.id} onRented={() => setMarkedRented(true)} />
+            <OwnerSection
+              listingId={listing.id}
+              onRented={() => setMarkedRented(true)}
+            />
             <ReportSection listingId={listing.id} />
           </div>
         </div>
@@ -577,7 +644,6 @@ export default function ListingPageClient({ listing }: { listing: Listing }) {
         {/* ── RIGHT COLUMN (desktop sidebar) ── */}
         <div className="hidden lg:block">
           <div className="sticky top-20 space-y-3">
-
             {/* Price card — subtle bg, no border */}
             <div className="rounded-2xl bg-muted/50 p-6 space-y-4">
               <div>
@@ -588,8 +654,14 @@ export default function ListingPageClient({ listing }: { listing: Listing }) {
                   <span className="text-muted-foreground text-sm">/month</span>
                 </div>
                 <div className="flex items-center gap-1.5 mt-2">
-                  <MapPin size={13} className="text-orange-400 shrink-0" strokeWidth={2.5} />
-                  <p className="text-muted-foreground text-sm truncate">{listing.location_name}</p>
+                  <MapPin
+                    size={13}
+                    className="text-orange-400 shrink-0"
+                    strokeWidth={2.5}
+                  />
+                  <p className="text-muted-foreground text-sm truncate">
+                    {listing.location_name}
+                  </p>
                 </div>
               </div>
 
@@ -606,7 +678,10 @@ export default function ListingPageClient({ listing }: { listing: Listing }) {
               </p>
             </div>
 
-            <OwnerSection listingId={listing.id} onRented={() => setMarkedRented(true)} />
+            <OwnerSection
+              listingId={listing.id}
+              onRented={() => setMarkedRented(true)}
+            />
             <ReportSection listingId={listing.id} />
           </div>
         </div>
@@ -615,12 +690,12 @@ export default function ListingPageClient({ listing }: { listing: Listing }) {
       {/* ── Sticky bottom bar on mobile ── */}
       <div className="fixed bottom-0 inset-x-0 z-20 lg:hidden border-t border-border bg-background/95 backdrop-blur-md px-4 py-3">
         <div className="flex items-center gap-3 max-w-lg mx-auto">
-        <div className="flex items-baseline gap-1">
-  <p className="text-base font-semibold text-foreground leading-tight">
-    UGX {listing.price.toLocaleString()}
-  </p>
-  <p className="text-xs text-muted-foreground">/month</p>
-</div>
+          <div className="flex items-baseline gap-1">
+            <p className="text-base font-semibold text-foreground leading-tight">
+              UGX {listing.price.toLocaleString()}
+            </p>
+            <p className="text-xs text-muted-foreground">/month</p>
+          </div>
           <Button
             className="ml-auto rounded-xl px-6 py-5 text-sm font-bold gap-2"
             onClick={() => window.open(`tel:${listing.phone_number}`)}

@@ -1,21 +1,21 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { useAuth } from "@/app/providers/auth-provider";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useAuth } from "@/app/providers/auth-provider";
-import { LogOut, User, ChevronRight, Heart, Home } from "lucide-react";
+import { ChevronRight, Heart, Home, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type Props = {
   open: boolean;
@@ -25,6 +25,7 @@ type Props = {
 export default function ProfileSheet({ open, onOpenChange }: Props) {
   const isMobile = useIsMobile();
   const { user, signOut } = useAuth();
+  const router = useRouter();
 
   const displayName = user?.user_metadata?.display_name as string | undefined;
   const email = user?.email;
@@ -44,15 +45,41 @@ export default function ProfileSheet({ open, onOpenChange }: Props) {
     onOpenChange(false);
   };
 
-  // Settings menu items — easy to extend later
+  const navigateToFeed = (view: "myListings" | "savedProperties") => {
+    onOpenChange(false);
+    if (view === "myListings") {
+      router.push("/?view=myListings");
+      return;
+    }
+    router.push("/?view=saved");
+  };
+
   const menuItems = [
-    { icon: Home, label: "My Listings", onClick: () => {} },
-    { icon: Heart, label: "Saved Properties", onClick: () => {} },
+    {
+      icon: Home,
+      label: "My Listings",
+      onClick: () => navigateToFeed("myListings"),
+    },
+    {
+      icon: Heart,
+      label: "Saved Properties",
+      onClick: () => navigateToFeed("savedProperties"),
+    },
   ];
 
   const content = (
     <div className="flex flex-col gap-4 pb-6">
-      {/* Avatar + user info */}
+      <div className="flex items-center justify-between gap-4 px-1 py-4 border-b border-border">
+        <div className="flex items-center gap-4">
+          <div>
+            <p className="text-lg font-semibold">Account</p>
+            <p className="text-sm text-muted-foreground">
+              Manage your listings, saved properties, and account settings.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="flex items-center gap-4 px-1 py-4 border-b border-border">
         <div className="w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold flex-shrink-0">
           {initials}
@@ -67,7 +94,6 @@ export default function ProfileSheet({ open, onOpenChange }: Props) {
         </div>
       </div>
 
-      {/* Menu items */}
       <div className="flex flex-col gap-1">
         {menuItems.map(({ icon: Icon, label, onClick }) => (
           <button
@@ -82,7 +108,6 @@ export default function ProfileSheet({ open, onOpenChange }: Props) {
         ))}
       </div>
 
-      {/* Sign out */}
       <div className="mt-auto pt-2 border-t border-border">
         <button
           onClick={handleSignOut}
