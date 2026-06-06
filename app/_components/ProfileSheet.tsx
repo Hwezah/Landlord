@@ -72,7 +72,7 @@ export default function ProfileSheet({ open, onOpenChange }: Props) {
       <div className="flex items-center justify-between gap-4 px-1 py-4 border-b border-border">
         <div className="flex items-center gap-4">
           <div>
-            <p className="text-lg font-semibold">Account</p>
+            {/* <p className="text-lg font-semibold">Account</p> */}
             <p className="text-sm text-muted-foreground">
               Manage your listings, saved properties, and account settings.
             </p>
