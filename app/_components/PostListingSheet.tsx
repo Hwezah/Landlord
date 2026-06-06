@@ -284,9 +284,9 @@ function PostListingForm({ onSuccess }: { onSuccess: () => void }) {
               <button
                 type="button"
                 onClick={() => removePhoto(i)}
-                className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+                className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
               >
-                <X size={10} />
+                <X size={20} />
               </button>
             </div>
           ))}

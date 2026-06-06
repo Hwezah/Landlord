@@ -11,7 +11,12 @@ import { MapPin, X } from "lucide-react";
 
 export type LatLng = { lat: number; lng: number };
 
-type PermissionStatus = "idle" | "asking" | "granted" | "denied" | "unsupported";
+type PermissionStatus =
+  | "idle"
+  | "asking"
+  | "granted"
+  | "denied"
+  | "unsupported";
 
 type LocationContextValue = {
   location: LatLng | null;
@@ -22,10 +27,15 @@ type LocationContextValue = {
 
 const LocationContext = createContext<LocationContextValue | null>(null);
 
-export function LocationProvider({ children }: { children: ReactNode }): ReactNode {
+export function LocationProvider({
+  children,
+}: {
+  children: ReactNode;
+}): ReactNode {
   const [location, setLocation] = useState<LatLng | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [permissionStatus, setPermissionStatus] = useState<PermissionStatus>("idle");
+  const [permissionStatus, setPermissionStatus] =
+    useState<PermissionStatus>("idle");
   const [showModal, setShowModal] = useState(false);
 
   // Check if permission was already granted or denied previously
@@ -72,7 +82,7 @@ export function LocationProvider({ children }: { children: ReactNode }): ReactNo
         setError(err.message || "Location unavailable");
         setPermissionStatus("denied");
         setShowModal(false);
-      }
+      },
     );
   }
 
@@ -89,7 +99,9 @@ export function LocationProvider({ children }: { children: ReactNode }): ReactNo
   }
 
   return (
-    <LocationContext.Provider value={{ location, error, permissionStatus, requestLocation }}>
+    <LocationContext.Provider
+      value={{ location, error, permissionStatus, requestLocation }}
+    >
       {children}
 
       {/* Custom Location Permission Modal */}
@@ -103,13 +115,12 @@ export function LocationProvider({ children }: { children: ReactNode }): ReactNo
 
           {/* Modal */}
           <div className="relative z-10 w-full sm:max-w-sm mx-4 sm:mx-auto bg-white rounded-t-3xl sm:rounded-2xl p-6 shadow-xl">
-            
             {/* Dismiss button */}
             <button
               onClick={handleDismiss}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+              className="absolute top-6 right-6 text-gray-400 hover:text-gray-600"
             >
-              <X size={20} />
+              <X size={35} />
             </button>
 
             {/* Icon */}
@@ -135,7 +146,9 @@ export function LocationProvider({ children }: { children: ReactNode }): ReactNo
                            hover:bg-blue-700 active:scale-95 transition-all
                            disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {permissionStatus === "asking" ? "Getting location..." : "Allow location access"}
+                {permissionStatus === "asking"
+                  ? "Getting location..."
+                  : "Allow location access"}
               </button>
 
               <button
